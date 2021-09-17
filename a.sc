@@ -465,3 +465,103 @@ def extraGraphNg(mainHash: Set[String], items: Map[BaseR, Set[String]], threshol
 
     readHash(fileName, id)
   }
+
+    sealed trait TableSource {}
+
+    case class DissTableRef(diss: DissRef, page: Int) extends TableSource
+
+    case class CyberTableRef(diss: CyberRef) extends TableSource
+
+def normalizeLastName(ln: String): String = {
+    ln.replace("Ё", "Е")
+}
+
+object LastName {
+    def fromOne(value: String): LastName = {
+	LastName(List(value))
+    }
+}
+
+case class LastName(values: List[String]) extends {
+
+  override def equals(o: Any): Boolean = o match {
+    case that: LastName =>
+      (this.values, that.values) match {
+        case (a :: Nil, b :: Nil) => a == b
+        case (x@(a :: a1 :: a2 :: Nil), b :: Nil) => x.contains(b)
+        case (b :: Nil, x@(_ :: _ :: _ :: Nil)) => x.contains(b)
+        case (y@(_ :: _ :: _ :: Nil), x@(_ :: _ :: _ :: Nil)) => x.sorted == y.sorted
+        case (a, b) => val (min, max) = if (a.size < b.size) {
+          (a, b)
+        } else {
+          (b, a)
+        }
+          max.toSet.intersect(min.toSet) == min.toSet
+      }
+    case _ => false
+  }
+    
+  override def hashCode = 0
+}
+
+
+
+def getLastNames(b: BaseR): Set[LastName] = {
+  b match {
+    case x@DissRef(id) => Set(LastName.fromOne(normalizeLastName(BaseRef1.getLastName(x))))
+    case CyberRef(id) => 
+      val path = cyberMetaRev(id)
+      val f = cyberMeta2(path)._1.replace(".", " ")
+        f.split(",").map(x => x.split(" ").filter(_.size > 1).toList).map(x => x.map(normalizeLastName)).map(x => LastName(x)).toSet
+  }
+}
+
+    def pp(a: (Int, Int), b: (Int, Int)): (Int, Int) = {
+      (a._1 + b._1, a._2 + b._2)
+    }
+
+    def countSource(source: List[BaseR]): (Int, Int) = {
+      source.map {
+        case x: DissRef => (1, 0)
+        case x: CyberRef => (0, 1)
+      }.reduce((a, b) => pp(a, b))
+    }
+
+
+  def typeClass(mainSet: Set[LastName], others: Set[LastName], cp: List[BaseR]): Int = {
+    val (d, c) = countSource(cp)
+    (mainSet, others) match {
+      case (a, b) if (a intersect b).isEmpty  => 1
+      case (a, b) if a == b && d > 0 && c > 0  => 30
+      case (a, b) if a == b && d > 0 && c == 0  => 31
+      case (a, b) if a == b && d == 0 && c > 0  => 32
+      case (a, b) if (a intersect b).nonEmpty => 2
+      case _ => 0
+    }
+  }
+
+    // fileName (wo .txt) -> (journal, vak_label)
+    lazy val cyberTitle: Map[String, (String, String)] = scala.io.Source.fromFile("cyber.title", "UTF-8").getLines().map { line =>
+      val split = (line + " ").split("\t")
+      split(0) -> (split(1), split(2).dropRight(1))
+    }.toMap.withDefaultValue(("???", "???"))
+
+    //id -> size
+    lazy val cyberSize: Map[Int, Int] = scala.io.Source.fromFile("cyber.size", "UTF-8").getLines().map { line =>
+      val split = line.split("\t").map(_.toInt)
+      split.head -> split.last
+    }.toMap.withDefaultValue(0)
+
+def getCyberJournal(c: CyberRef): String = {
+  cyberTitle(cyberMetaRev(c.id).dropRight(4))._1
+}
+
+def getCyberLabel(c: CyberRef): String = {
+  cyberTitle(cyberMetaRev(c.id).dropRight(4))._2
+}
+
+def getCyberSize(c: CyberRef): Int = {
+  cyberSize(c.id)
+}
+
+    lazy val validCyberIds: Set[Int] = scala.io.Source.fromFile("valid.cyber").getLines().map(_.toInt).toSet
