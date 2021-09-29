@@ -581,4 +581,74 @@ object Diss {
     tableCl.contains(cyberRef.id)
   }
 
+
+  def createTableSource(split: List[String]): TableSource = {
+    if (split.size == 5) {
+      CyberTableRef(CyberRef(split(2).toInt))
+    } else {
+      DissTableRef(DissRef(split(2).toInt), split(3).toInt)
+    }
+  }
+
+  lazy val tableCnts: scala.collection.mutable.Map[(TableSource, TableSource), Int] = {
+    val res = scala.collection.mutable.Map[(TableSource, TableSource), Int]().withDefaultValue(0)
+
+    GroupIterator[String, String, List[String]](scala.io.Source.fromFile("dctu.table").getLines(), line => {
+      val split = line.split("\t")
+
+      (split.take(2).mkString("\t"), List(line))
+    },
+      {
+        (a, b) => a ++ b
+      }
+    ).foreach { case (_, list) =>
+      for (p <- list.combinations(2).toList) {
+        val fst = createTableSource(p.head.split("\t").toList)
+        val snd = createTableSource(p.last.split("\t").toList)
+
+        res((fst, snd)) = res((fst, snd)) + 1
+        res((snd, fst)) = res((snd, fst)) + 1
+      }
+    }
+
+    res
+  }
+
+  lazy val tableMin = tableCnts.filter(_._2 >= 10).filter { x =>
+    Try {
+      BaseRef1.year(getRef(x._1._1)) + BaseRef1.year(getRef(x._1._2))
+    }.isSuccess
+  }
+
+  lazy val tableKeys: Vector[(TableSource, TableSource)] = tableMin.keySet.toVector
+
+  lazy val tableMap: Map[BaseR, Vector[(TableSource, TableSource)]] = tableKeys.groupBy(x => getRef(x._1))
+
+  lazy val tableMap1: Map[BaseR, Map[BaseR, Vector[(TableSource, TableSource)]]] = tableMap.mapValues { vec =>
+    vec.groupBy(x => getRef(x._2))
+  }
+
+  lazy val tableByYear: Vector[(BaseR, Map[BaseR, Vector[(TableSource, TableSource)]])] = tableMap1.toVector.filter(x => Try {
+    BaseRef1.year(x._1)
+  }.isSuccess).sortBy(x => BaseRef1.year(x._1))
+
+  def checkCyber(baseR: BaseR) = {
+    baseR match {
+      case CyberRef(q) =>
+        if (!cyberTitle.contains(cyberMetaRev(q).dropRight(4))) {
+          val link = s"https://cyberleninka.ru/article/n/${cyberMetaRev(q).dropRight(4)}"
+          FileUtils.appendLine("cdown.txt", link);
+        }
+      case _ => ()
+    }
+  }
+
+  def writeDiss(baseR: BaseR) = {
+    baseR match {
+      case DissRef(id) =>
+        FileUtils.appendLine("dissD.txt", baseR.toString);
+      case _ => ()
+    }
+  }
+
 }
