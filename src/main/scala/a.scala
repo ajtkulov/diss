@@ -555,4 +555,30 @@ object Diss {
 
   lazy val validCyberIds: Set[Int] = scala.io.Source.fromFile("valid.cyber").getLines().map(_.toInt).toSet
 
+  def getRef(tableSource: TableSource): BaseR = {
+    tableSource match {
+      case CyberTableRef(diss) => diss
+      case DissTableRef(diss, _) => diss
+    }
+  }
+
+  def isPlagiat(fst: BaseR, snd: BaseR): Boolean = {
+    val f = getLastNames(fst)
+    val s = getLastNames(snd)
+    (f intersect s).isEmpty
+  }
+
+  def getTsvLongInfo(baseR: BaseR): List[String] = {
+    baseR match {
+      case x@DissRef(id) => List[String](BaseRef1.year(baseR).toString, BaseRef1.getLastName(x), RefInfo.getLongInfo(x))
+      case x@CyberRef(id) => List[String](BaseRef1.year(baseR).toString, getCyberMeta(id)._1, getCyberJournal(x), getCyberLabel(x), RefInfo.getLongInfo(x))
+    }
+  }
+
+  lazy val tableCl: Set[Int] = scala.io.Source.fromFile("clTable.id").getLines.map(_.toInt).toSet
+
+  def clHasTable(cyberRef: CyberRef): Boolean = {
+    tableCl.contains(cyberRef.id)
+  }
+
 }
