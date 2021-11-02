@@ -651,4 +651,100 @@ object Diss {
     }
   }
 
+
+  //DocId, PageNum
+  lazy val tableSet = {
+    val res = scala.collection.mutable.Set[(Int, Int)]()
+
+    scala.io.Source.fromFile("ff.tt").getLines().foreach { line =>
+      val split = line.split("\t")
+      res.add((split(2).toInt, split(3).toInt))
+    }
+
+    res
+  }
+
+  //doc1, page1, doc2, page2
+  lazy val tablePageMap = {
+    val res = scala.collection.mutable.Map[(Int, Int, Int, Int), Int]().withDefaultValue(0)
+    GroupIterator[String, String, List[String]](scala.io.Source.fromFile("tt.tt").getLines(), line => {
+      val split = line.split("\t")
+
+      (split.take(2).mkString("\t"), List(line))
+    },
+      {
+        (a, b) => a ++ b
+      }
+    ).foreach { case (_, list) =>
+      val pages = list.map(x => x.split("\t").last.toInt)
+      val ids = list.map(x => x.split("\t").dropRight(1).last.toInt)
+      ids.zip(pages).combinations(2).foreach {
+        ll =>
+
+          val ii = ll.head
+          val jj = ll.last
+          if (tableSet.contains(ii._1, ii._2) && tableSet.contains(jj._1, jj._2)) {
+            res((ii._1, ii._2, jj._1, jj._2)) = res((ii._1, ii._2, jj._1, jj._2)) + 1
+            res((jj._1, jj._2, ii._1, ii._2)) = res((jj._1, jj._2, ii._1, ii._2)) + 1
+          }
+      }
+    }
+
+    res
+  }
+
+  lazy val resTable = tablePageMap.filter { case (_, v) => v >= 10 }.filter { case ((a, _, c, _), _) => a != c}
+
+  lazy val resTableByPage: Map[(Int, Int), List[((Int, Int), Int)]] = resTable.toList.groupBy(x => (x._1._1, x._1._3)).mapValues(x => x.map(z => ((z._1._2, z._1._4), z._2)))
+  lazy val resTableCount: Map[(Int, Int), Int] = resTableByPage.mapValues(x => x.map(_._2).sum)
+
+
+
+  def extractPageContext(fileName: String, page: Int): List[String] = {
+    import scala.util.Try
+    Try {
+
+      val a: Array[String] = Try {
+        scala.io.Source.fromFile(fileName, "UTF-8").getLines().toList.mkString("").split(12.toChar)
+      }.getOrElse {
+        import java.io._
+        val br = new BufferedReader(new InputStreamReader(
+          new FileInputStream(fileName), "UTF-8"))
+        br.lines().toArray.toList.map(_.toString).mkString("").split(12.toChar)
+      }
+
+
+      val p = a(page).toUpperCase
+
+      val sp: List[String] = p.filter(x => x.isLetterOrDigit || x == ' ').split(" ").filter(_.nonEmpty).mkString(" ").split("ТАБЛИЦ").toList
+
+      val res: List[String] = (1 to sp.size - 1).map { idx =>
+        s"${sp.take(idx).mkString("ТАБЛИЦ").takeRight(1)}ТАБЛИЦ${sp.drop(idx).mkString("ТАБЛИЦ").take(150)}"
+
+      }.toList
+
+      res
+    }.getOrElse(List[String]("*********"))
+  }
+
+  def fullPath(fileName: String): String = {
+    val dir = loc(fileName)
+    s"d/${dir}/$fileName"
+  }
+
+  def extract(fst: String, snd: String, fstPage: Int, sndPage: Int): List[String] = {
+    val fstList: List[String] = extractPageContext(fullPath(fst), fstPage).map(x => s"${fstPage + 1}: ${x}")
+    val sndList: List[String] = extractPageContext(fullPath(snd), sndPage).map(x => s"${sndPage + 1}: ${x}")
+
+    val add = scala.math.max(fstList.size, sndList.size) - scala.math.min(fstList.size, sndList.size)
+
+    val (f: List[String], s: List[String]) = (fstList.size, sndList.size) match {
+      case (a, b) if a < b => (fstList ++ List.fill[String](add)(""), sndList)
+      case _ => (fstList, sndList ++ List.fill[String](add)(""))
+    }
+
+    f.zip(s).map { case (a, b) => s"\t\t\t\t\t${a}\t${b}"
+    }
+  }
+
 }
