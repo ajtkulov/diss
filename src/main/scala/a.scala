@@ -798,7 +798,7 @@ object Diss {
   def getContext(src: TableSource): List[String] = {
     src match {
       case x@CyberTableRef(_) => getContextFromCyber(x)
-      case x@DissTableRef(_, _) => getContextFromDiss(x)
+      case x@DissTableRef(_, page) => List(s"page: $page") ++ getContextFromDiss(x)
     }
   }
 
