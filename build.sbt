@@ -11,3 +11,11 @@ libraryDependencies += "com.github.melrief" %% "purecsv" % "0.1.1"
 libraryDependencies += "com.typesafe.play" %% "play-json" % "2.8.0"
 
 libraryDependencies += "org.jsoup" % "jsoup" % "1.13.1"
+
+val circeVersion = "0.14.1"
+
+libraryDependencies ++= Seq(
+  "io.circe" %% "circe-core",
+  "io.circe" %% "circe-generic",
+  "io.circe" %% "circe-parser"
+).map(_ % circeVersion)

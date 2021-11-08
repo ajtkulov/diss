@@ -747,4 +747,72 @@ object Diss {
     }
   }
 
+  lazy val cyberMetaPath: Map[Int, Int] = scala.io.Source.fromFile("down/meta.c").getLines().map { line =>
+    val split = line.split("\t")
+    (split(0).toInt, split(1).toInt)
+  }.toMap
+
+  def getPath(baseR: BaseR): String = {
+    baseR match {
+      case CyberRef(id) =>
+        s"c/${cyberMetaPath(id)}/${cyberMetaRev(id)}"
+
+      case DissRef(id) =>
+        val idd = getDissMeta(id).id
+        s"dissTable/${idd}.txt"
+    }
+  }
+
+  def normalizeTableStr(str: String): String = {
+    str.filter(ch => ch == ' ' || (ch >= 'а' && ch <= 'Я') || (ch >= '\u0410' && ch <= '\u044F') || ch.isDigit).toUpperCase.split(" ").filter(_.nonEmpty).mkString(" ")
+  }
+
+  def getContextFromCyber(ref: CyberTableRef): List[String] = {
+    val text = normalizeTableStr(scala.io.Source.fromFile(getPath(ref.diss), "UTF-8").getLines().mkString("\n"))
+    val sp = text.split("ТАБЛИЦ").toList
+    (1 to sp.size - 1).map { idx =>
+      s"${sp.take(idx).mkString("ТАБЛИЦ").takeRight(1)}ТАБЛИЦ${sp.drop(idx).mkString("ТАБЛИЦ").take(150)}"
+    }.toList
+  }
+
+  def getContextFromDiss(diss: DissTableRef): List[String] = {
+    val a: String = {
+      import java.io._
+      val br = new BufferedReader(new InputStreamReader(
+        new FileInputStream(getPath(diss.diss)), "UTF-8"))
+      br.lines().toArray.toList.map(_.toString).mkString("")
+    }
+
+    val pages = a.split(12.toChar)
+
+    val text = normalizeTableStr(pages(diss.page))
+
+
+    val sp = text.split("ТАБЛИЦ").toList
+    (1 to sp.size - 1).map { idx =>
+      s"${sp.take(idx).mkString("ТАБЛИЦ").takeRight(1)}ТАБЛИЦ${sp.drop(idx).mkString("ТАБЛИЦ").take(150)}"
+    }.toList
+  }
+
+
+  def getContext(src: TableSource): List[String] = {
+    src match {
+      case x@CyberTableRef(_) => getContextFromCyber(x)
+      case x@DissTableRef(_, _) => getContextFromDiss(x)
+    }
+  }
+
+
+  def getSource(tableSource: TableSource): BaseR = {
+    tableSource match {
+      case CyberTableRef(art) => art
+      case DissTableRef(diss, page) => diss
+    }
+  }
+
+
+  case class TableRecord(mainRef: List[String], mainContext: List[String], otherContext: List[TableRecordItem])
+
+  case class TableRecordItem(otherRef: List[String], context: List[String])
+
 }
