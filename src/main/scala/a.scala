@@ -242,6 +242,8 @@ object Diss {
 
   lazy val meta2: Map[String, MetaData2] = MetaData2.fromFile("text.csv").filter(x => allSet.contains(x.id)).map(x => (x.id, x)).toMap
 
+  lazy val meta2all: Vector[MetaData2]  = MetaData2.fromFile("text.csv").toVector
+
   def getDissMeta(id: Int): MetaData2 = {
     meta2(all_back(id).dropRight(4))
   }
