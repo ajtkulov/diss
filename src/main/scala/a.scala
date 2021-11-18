@@ -242,7 +242,7 @@ object Diss {
 
   lazy val meta2: Map[String, MetaData2] = MetaData2.fromFile("text.csv").filter(x => allSet.contains(x.id)).map(x => (x.id, x)).toMap
 
-  lazy val meta2all: Vector[MetaData2]  = MetaData2.fromFile("text.csv").toVector
+  lazy val meta2all: Vector[MetaData2] = MetaData2.fromFile("text.csv").toVector
 
   def getDissMeta(id: Int): MetaData2 = {
     meta2(all_back(id).dropRight(4))
@@ -273,13 +273,18 @@ object Diss {
     Try {
       val split = x.split("\\|").toList
       val lastName = split(1).toUpperCase
-      val year = Try {
-        split(0).takeRight(4).toInt
-      }.getOrElse(split(27).takeRight(4).toInt)
+      val year = extractYearFromDisbase(x)
       ((lastName, year), x)
     }.getOrElse((("", 0), ""))
   }.groupBy(x => x._1).withDefaultValue(Nil)
 
+  def extractYearFromDisbase(value: String): Int = {
+    val split = value.split("\\|").toList
+    val year = Try {
+      split(0).takeRight(4).toInt
+    }.getOrElse(split(27).takeRight(4).toInt)
+    year
+  }
 
   def extractWorkNamefromDisbase(value: String): String = {
     (value + " ").split("\\|")(4)
@@ -695,11 +700,10 @@ object Diss {
     res
   }
 
-  lazy val resTable = tablePageMap.filter { case (_, v) => v >= 10 }.filter { case ((a, _, c, _), _) => a != c}
+  lazy val resTable = tablePageMap.filter { case (_, v) => v >= 10 }.filter { case ((a, _, c, _), _) => a != c }
 
   lazy val resTableByPage: Map[(Int, Int), List[((Int, Int), Int)]] = resTable.toList.groupBy(x => (x._1._1, x._1._3)).mapValues(x => x.map(z => ((z._1._2, z._1._4), z._2)))
   lazy val resTableCount: Map[(Int, Int), Int] = resTableByPage.mapValues(x => x.map(_._2).sum)
-
 
 
   def extractPageContext(fileName: String, page: Int): List[String] = {
