@@ -286,7 +286,7 @@ object Diss {
   }
 
   def extractSpecfromDisbase(value: String): String = {
-    (value + " ").split("\\|").last
+    (value + " ").split("\\|").last.trim.split(" ").last
   }
 
   def onlyNum(value: String): String = value.filter(_.isDigit)
