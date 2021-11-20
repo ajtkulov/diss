@@ -281,8 +281,10 @@ object Diss {
   def extractYearFromDisbase(value: String): Int = {
     val split = value.split("\\|").toList
     val year = Try {
-      split(0).takeRight(4).toInt
-    }.getOrElse(split(27).takeRight(4).toInt)
+      Try {
+        split(0).takeRight(4).toInt
+      }.getOrElse(split(27).takeRight(4).toInt)
+    }.getOrElse(0)
     year
   }
 
