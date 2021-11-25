@@ -731,7 +731,11 @@ object Diss {
 
       }.toList
 
-      res
+      if (res.isEmpty) {
+        List("+- СОСЕДНЯЯ СТРАНИЦА, НЕ СОДЕРЖИТ ПОДСТРОКИ ТАБЛИЦ")
+      } else {
+        res
+      }
     }.getOrElse(List[String]("*********"))
   }
 
