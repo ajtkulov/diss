@@ -744,9 +744,9 @@ object Diss {
     s"d/${dir}/$fileName"
   }
 
-  def extract(fst: String, snd: String, fstPage: Int, sndPage: Int): List[String] = {
-    val fstList: List[String] = extractPageContext(fullPath(fst), fstPage).map(x => s"${fstPage + 1}: ${x}")
-    val sndList: List[String] = extractPageContext(fullPath(snd), sndPage).map(x => s"${sndPage + 1}: ${x}")
+  def extract(fst: String, snd: String, fstPage: Int, sndPage: Int, pathFunc: String => String = fullPath): List[String] = {
+    val fstList: List[String] = extractPageContext(pathFunc(fst), fstPage).map(x => s"${fstPage + 1}: ${x}")
+    val sndList: List[String] = extractPageContext(pathFunc(snd), sndPage).map(x => s"${sndPage + 1}: ${x}")
 
     val add = scala.math.max(fstList.size, sndList.size) - scala.math.min(fstList.size, sndList.size)
 
