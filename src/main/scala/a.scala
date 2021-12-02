@@ -683,7 +683,7 @@ object Diss {
       res((split(2).toInt, split(3).toInt)) = res((split(2).toInt, split(3).toInt)) + 1
     }
 
-    res.filter(_._2 >= 5) .keySet
+    res.filter(_._2 >= 10) .keySet
   }
 
   //doc1, page1, doc2, page2
