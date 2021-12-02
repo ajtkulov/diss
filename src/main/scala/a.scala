@@ -1,7 +1,8 @@
 import scala.collection.mutable.ArrayBuffer
-
 import scala.util.Try
 import purecsv.unsafe.CSVReader
+
+import scala.collection.mutable
 
 object Diss {
 
@@ -661,20 +662,32 @@ object Diss {
   }
 
 
-  //DocId, PageNum
-  lazy val tableSet = {
-    val res = scala.collection.mutable.Set[(Int, Int)]()
+//  //DocId, PageNum
+//  lazy val tableSet = {
+//    val res = scala.collection.mutable.Set[(Int, Int)]()
+//
+//    scala.io.Source.fromFile("ff.tt").getLines().foreach { line =>
+//      val split = line.split("\t")
+//      res.add((split(2).toInt, split(3).toInt))
+//    }
+//
+//    res
+//  }
 
-    scala.io.Source.fromFile("ff.tt").getLines().foreach { line =>
+  //DocId, PageNum
+  lazy val tableSet: collection.Set[(Int, Int)] = {
+    val res = scala.collection.mutable.Map[(Int, Int), Int]().withDefaultValue(0)
+
+    scala.io.Source.fromFile("tt.tt").getLines().foreach { line =>
       val split = line.split("\t")
-      res.add((split(2).toInt, split(3).toInt))
+      res((split(2).toInt, split(3).toInt)) = res((split(2).toInt, split(3).toInt)) + 1
     }
 
-    res
+    res.filter(_._2 >= 5) .keySet
   }
 
   //doc1, page1, doc2, page2
-  lazy val tablePageMap = {
+  lazy val tablePageMap: mutable.Map[(Int, Int, Int, Int), Int] = {
     val res = scala.collection.mutable.Map[(Int, Int, Int, Int), Int]().withDefaultValue(0)
     GroupIterator[String, String, List[String]](scala.io.Source.fromFile("tt.tt").getLines(), line => {
       val split = line.split("\t")
@@ -702,7 +715,7 @@ object Diss {
     res
   }
 
-  lazy val resTable = tablePageMap.filter { case (_, v) => v >= 10 }.filter { case ((a, _, c, _), _) => a != c }
+  lazy val resTable: mutable.Map[(Int, Int, Int, Int), Int] = tablePageMap.filter { case (_, v) => v >= 10 }.filter { case ((a, _, c, _), _) => a != c }
 
   lazy val resTableByPage: Map[(Int, Int), List[((Int, Int), Int)]] = resTable.toList.groupBy(x => (x._1._1, x._1._3)).mapValues(x => x.map(z => ((z._1._2, z._1._4), z._2)))
   lazy val resTableCount: Map[(Int, Int), Int] = resTableByPage.mapValues(x => x.map(_._2).sum)
