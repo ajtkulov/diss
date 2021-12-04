@@ -840,4 +840,25 @@ object Diss {
 
   case class TableRecordItem(otherRef: List[String], context: List[String])
 
+  lazy val workSizes: Map[Int, String] = scala.io.Source.fromFile("size.size").getLines.map { line =>
+    val split = line.split("\t")
+    split(0).toInt -> split(1)
+  }.toMap
+
+  lazy val workSizesSI: Map[Int, Int] = workSizes.mapValues(_.split("-").last.toInt + 1)
+
+  lazy val ngRealMap: mutable.Map[(BaseR, BaseR), Int] = {
+    val res = scala.collection.mutable.Map[(BaseR, BaseR), Int]().withDefaultValue(0)
+
+    scala.io.Source.fromFile("ngMap7").getLines.foreach { line =>
+      val split = line.split("\t").map(_.toInt)
+      if (split.last >= 7)
+        res((fromId(split.head), fromId(split(1)))) = split.last
+    }
+    res
+  }
+
+  lazy val ngGrouped: Map[BaseR, Vector[BaseR]] = ngRealMap.toVector.groupBy(_._1._1).mapValues(_.map(x => x._1._2))
+
+  val ngVector: Vector[(BaseR, Vector[BaseR])] = ngGrouped.toVector
 }
