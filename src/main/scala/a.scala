@@ -721,20 +721,18 @@ object Diss {
   lazy val resTableByPage: Map[(Int, Int), List[((Int, Int), Int)]] = resTable.toList.groupBy(x => (x._1._1, x._1._3)).mapValues(x => x.map(z => ((z._1._2, z._1._4), z._2)))
   lazy val resTableCount: Map[(Int, Int), Int] = resTableByPage.mapValues(x => x.map(_._2).sum)
 
+  def read(fileName: String): String = {
+    import java.io._
+    val br = new BufferedReader(new InputStreamReader(
+      new FileInputStream(fileName), "UTF-8"))
+    br.lines().toArray.toList.map(_.toString).mkString("")
+  }
 
-  def extractPageContext(fileName: String, page: Int): List[String] = {
+  def extractPageContext(ref: DissRef, page: Int): List[String] = {
     import scala.util.Try
     Try {
 
-      val a: Array[String] = Try {
-        scala.io.Source.fromFile(fileName, "UTF-8").getLines().toList.mkString("").split(12.toChar)
-      }.getOrElse {
-        import java.io._
-        val br = new BufferedReader(new InputStreamReader(
-          new FileInputStream(fileName), "UTF-8"))
-        br.lines().toArray.toList.map(_.toString).mkString("").split(12.toChar)
-      }
-
+      val a: Array[String] = read(fullPathDiss(ref)).split(12.toChar)
 
       val p = a(page).toUpperCase
 
@@ -758,17 +756,17 @@ object Diss {
   }
 
   def customPathFunc(dir: String, fileName: String): String = {
-    s"d/${dir}/$fileName"
+    s"d/data1/$dir/$fileName"
   }
 
   def fullPath(fileName: String, pathFunc: (String, String) => String = customPathFunc): String = {
     val dir = loc(fileName)
-    customPathFunc(dir, fileName)
+    pathFunc(dir, fileName)
   }
 
-  def extract(fst: String, snd: String, fstPage: Int, sndPage: Int, pathFunc: String => String = fullPath): List[String] = {
-    val fstList: List[String] = extractPageContext(pathFunc(fst), fstPage).map(x => s"${fstPage + 1}: ${x}")
-    val sndList: List[String] = extractPageContext(pathFunc(snd), sndPage).map(x => s"${sndPage + 1}: ${x}")
+  def extract(fst: DissRef, snd: DissRef, fstPage: Int, sndPage: Int, pathFunc: String => String): List[String] = {
+    val fstList: List[String] = extractPageContext(fst, fstPage).map(x => s"${fstPage + 1}: ${x}")
+    val sndList: List[String] = extractPageContext(snd, sndPage).map(x => s"${sndPage + 1}: ${x}")
 
     val add = scala.math.max(fstList.size, sndList.size) - scala.math.min(fstList.size, sndList.size)
 
