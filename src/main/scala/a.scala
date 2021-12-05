@@ -2,6 +2,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.util.Try
 import purecsv.unsafe.CSVReader
 
+import scala.annotation.tailrec
 import scala.collection.mutable
 
 object Diss {
@@ -752,6 +753,10 @@ object Diss {
     }.getOrElse(List[String]("*********"))
   }
 
+  def fullPathDiss(diss: DissRef): String = {
+    fullPath(s"${getDissMeta(diss.id).id}.txt")
+  }
+
   def fullPath(fileName: String): String = {
     val dir = loc(fileName)
     s"d/${dir}/$fileName"
@@ -861,4 +866,63 @@ object Diss {
   lazy val ngGrouped: Map[BaseR, Vector[BaseR]] = ngRealMap.toVector.groupBy(_._1._1).mapValues(_.map(x => x._1._2))
 
   lazy val ngVector: Vector[(BaseR, Vector[BaseR])] = ngGrouped.toVector
+
+  def matchWord(fst: String, snd: String): Boolean = {
+    val minLen = scala.math.min(fst.length, snd.length)
+    (fst, snd, fst.length, snd.length) match {
+      case (f, s, fl, sl) if f == s => true
+      case (f, s, fl, sl) if scala.math.abs(sl - fl) <= 2 && fl >= 6 && f.take(fl - 2) == s.take(fl - 2) => true
+      case (f, s, fl, sl) if scala.math.abs(sl - fl) <= 2 && fl == 5 && f.take(fl - 1) == s.take(fl - 1) => true
+      case (f, s, fl, sl) if scala.math.abs(sl - fl) <= 2 && fl == 4 && f.take(minLen) == s.take(minLen) => true
+      case (f, s, fl, sl) if scala.math.abs(sl - fl) <= 1 && fl == 3 && f.take(2) == s.take(2) => true
+      case _ => false
+    }
+  }
+
+  type Res = Int
+
+  def prefixMatch(phrase: List[String], text: List[String], offset: Int): List[Res] = {
+    (phrase, text) match {
+      case (Nil, _) => List(offset)
+      case (a :: tail, b :: tail1) if matchWord(a, b) => prefixMatch(tail, tail1, offset)
+      case _ => Nil
+
+    }
+  }
+
+  @tailrec
+  def matchList(phrase: List[String], text: List[String], acc: List[Res], offset: Int): List[Res] = {
+    (phrase, text) match {
+      case (_, Nil) => acc
+      case (a :: t1, b :: t2) if matchWord(a, b) => matchList(phrase, t2, prefixMatch(t1, t2, offset) ++ acc, offset + 1)
+      case (_, _ :: tail1) => matchList(phrase, tail1, acc, offset + 1)
+    }
+  }
+
+  def matchText(listSpit: List[List[String]], values: List[String]): List[(String, String)] = {
+    listSpit.zipWithIndex.flatMap { case (phrase, id) =>
+      matchList(phrase, values, Nil, 0).map { offset =>
+        val str = values.slice(offset, offset + phrase.size).mkString(" ")
+        //        s"${phrase.mkString(" ")} -> $str"
+        phrase.mkString(" ") -> str
+      }
+    }
+  }
+
+  def prettyPrint(values: List[(String, String)]): String = {
+    if (values.isEmpty) {
+      ""
+    } else {
+
+      val map = values.groupBy(_._1).mapValues(_.map(_._2)).mapValues { list =>
+        list.groupBy(identity).mapValues(x => x.size).toList.toString
+      }
+
+      s"${values.size}\t${map.size}\t${map.toList.toString}"
+
+    }
+  }
+
+
+
 }
