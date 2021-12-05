@@ -865,7 +865,7 @@ object Diss {
     res
   }
 
-  lazy val ngGrouped: Map[BaseR, Vector[BaseR]] = ngRealMap.toVector.groupBy(_._1._1).mapValues(_.map(x => x._1._2))
+  lazy val ngGrouped: Map[BaseR, Vector[BaseR]] = ngRealMap.toVector.groupBy(_._1._1).mapValues(_.map(x => x._1._2)).withDefaultValue(Vector.empty)
 
   lazy val ngVector: Vector[(BaseR, Vector[BaseR])] = ngGrouped.toVector
 
