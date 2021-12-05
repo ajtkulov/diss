@@ -753,13 +753,17 @@ object Diss {
     }.getOrElse(List[String]("*********"))
   }
 
-  def fullPathDiss(diss: DissRef): String = {
-    fullPath(s"${getDissMeta(diss.id).id}.txt")
+  def fullPathDiss(diss: DissRef, pathFunc: (String, String) => String = customPathFunc): String = {
+    fullPath(s"${getDissMeta(diss.id).id}.txt", pathFunc)
   }
 
-  def fullPath(fileName: String): String = {
-    val dir = loc(fileName)
+  def customPathFunc(dir: String, fileName: String): String = {
     s"d/${dir}/$fileName"
+  }
+
+  def fullPath(fileName: String, pathFunc: (String, String) => String = customPathFunc): String = {
+    val dir = loc(fileName)
+    customPathFunc(dir, fileName)
   }
 
   def extract(fst: String, snd: String, fstPage: Int, sndPage: Int, pathFunc: String => String = fullPath): List[String] = {
