@@ -725,7 +725,46 @@ object Diss {
     import java.io._
     val br = new BufferedReader(new InputStreamReader(
       new FileInputStream(fileName), "UTF-8"))
-    br.lines().toArray.toList.map(_.toString).mkString("")
+    val res = br.lines().toArray.toList.map(_.toString).mkString("")
+    br.close()
+    res
+  }
+
+  def readWoBib(fileName: String): String = {
+    val bibList = List[String](
+      "СПИСОК ЛИТЕРАТУРЫ", "СПИСОК ИСПОЛЬЗОВАННОЙ", "СПИСОК ИСПОЛЬЗУЕМОЙ", "СПИСОКЛИТЕРАТУРЫ", "УКАЗАТЕЛЬ ЛИТЕРАТУРЫ",
+      "СПИСОК ЦИТИРУЕМОЙ", "ИСПОЛЬЗОВАННАЯ ЛИТЕРАТУРА", "БИБЛИОГРАФИЧЕСКИЙ СПИСОК", "СПИСОК ИСПОЛЬЗОВАННЫХ",
+      "БИБЛИОГРАФИЧЕСКИЙ", "БИБЛИОГРАФИЯ", "СПИСОК ИСТОЧНИКОВ", "ЛИТЕРАТУРА")
+
+    val endList = List[String]("ВЫВОДЫ", "ЗАКЛЮЧЕНИЕ")
+
+    val r = read(fileName)
+
+    val a = r.split(12.toChar)
+
+    val zip: Array[(String, Int)] = a.zipWithIndex
+    val rev = zip.reverse
+
+    val bib: Option[Int] = rev.take((rev.size * 3 / 4).toInt).find { case (str, _) =>
+      val list = str.take(100).toUpperCase.filter(x => x.isLetter || x == ' ').split(" ").filter(_.nonEmpty)
+      val head = list.mkString(" ")
+      bibList.exists(prefix => head.startsWith(prefix))
+    }.map(_._2)
+
+    val end: Option[Int] = rev.take((rev.size * 3 / 4).toInt).find { case (str, _) =>
+      val list = str.take(100).toUpperCase.filter(x => x.isLetter || x == ' ').split(" ").filter(_.nonEmpty)
+      val head = list.mkString(" ")
+      endList.exists(prefix => head.startsWith(prefix))
+    }.map(_._2)
+
+    val endPos = (bib, end) match {
+      case (Some(b), Some(e)) => scala.math.min(b, e)
+      case (None, Some(e)) => e
+      case (Some(b), None) => b
+      case _ => a.size - 10
+    }
+
+    zip.slice(5, endPos).map(_._1).mkString("")
   }
 
   def extractPageContext(ref: DissRef, page: Int): List[String] = {
