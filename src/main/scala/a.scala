@@ -803,7 +803,7 @@ object Diss {
     pathFunc(dir, fileName)
   }
 
-  def extract(fst: DissRef, snd: DissRef, fstPage: Int, sndPage: Int, pathFunc: String => String): List[String] = {
+  def extract(fst: DissRef, snd: DissRef, fstPage: Int, sndPage: Int): List[String] = {
     val fstList: List[String] = extractPageContext(fst, fstPage).map(x => s"${fstPage + 1}: ${x}")
     val sndList: List[String] = extractPageContext(snd, sndPage).map(x => s"${sndPage + 1}: ${x}")
 
