@@ -730,7 +730,7 @@ object Diss {
     res
   }
 
-  def readWoBib(fileName: String): String = {
+  def readWoBib(fileName: String, dropFirst: Int = 5): String = {
     val bibList = List[String](
       "СПИСОК ЛИТЕРАТУРЫ", "СПИСОК ИСПОЛЬЗОВАННОЙ", "СПИСОК ИСПОЛЬЗУЕМОЙ", "СПИСОКЛИТЕРАТУРЫ", "УКАЗАТЕЛЬ ЛИТЕРАТУРЫ",
       "СПИСОК ЦИТИРУЕМОЙ", "ИСПОЛЬЗОВАННАЯ ЛИТЕРАТУРА", "БИБЛИОГРАФИЧЕСКИЙ СПИСОК", "СПИСОК ИСПОЛЬЗОВАННЫХ",
@@ -764,7 +764,7 @@ object Diss {
       case _ => a.size - 10
     }
 
-    zip.slice(5, endPos).map(_._1).mkString("")
+    zip.slice(dropFirst, endPos).map(_._1).mkString("")
   }
 
   def extractPageContext(ref: DissRef, page: Int): List[String] = {
