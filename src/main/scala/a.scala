@@ -964,6 +964,17 @@ object Diss {
     }
   }
 
+  def req(values: String): List[(Int, String)] = {
+    val r = requests.post("http://0.0.0.0:9999/pred", data = ujson.Obj("data" -> values).render(),
+      headers = Map(
+        "Content-Type" -> "application/json"
+      )
+    )
 
+    val t = r.text("UTF-8")
 
+    ujson.read(t).arr.map { v =>
+      (v("idx").num.toInt -> v("word").str)
+    }.toList
+  }
 }

@@ -28,12 +28,18 @@ def index():
     res = {'cache': cache_predict.cache_info()}
     return jsonify(res)
 
+def is_word(value):
+    for c in value:
+        if not(c >= "\u0410" and c <= "\u044F"):
+            return False
+    return  True
+
 
 @app.route("/pred", methods=["POST"])
 def predictions():
     content = request.get_json(silent=True)
     sp = content["data"].split(" ")
-    l = [(i, v) for i, v in enumerate(sp) if len(v) >= 6]
+    l = [(i, v) for i, v in enumerate(sp) if len(v) >= 6 and is_word(v)]
     f = [{'idx': i, 'word': v} for i, v in l if cache_predict(v)]
     return jsonify(f)
 
