@@ -18,14 +18,14 @@ from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.metrics import accuracy_score
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
-from model import model
-from model import pred
+import functools
+
 
 app = Flask(__name__)
 
 @app.route("/")
 def index():
-    res = {}
+    res = {'cache': cache_predict.cache_info()}
     return jsonify(res)
 
 
@@ -33,8 +33,13 @@ def index():
 def predictions():
     content = request.get_json(silent=True)
     sp = content["data"].split(" ")
-    res = g.model.predict(pd.Series(sp)).tolist()
-    return jsonify(res)
+    l = [(i, v) for i, v in enumerate(sp) if len(v) >= 6]
+    f = [{'idx': i, 'word': v} for i, v in l if cache_predict(v)]
+    return jsonify(f)
+
+@functools.lru_cache(maxsize=1048576)
+def cache_predict(word) -> bool:
+    return g.model.predict(pd.Series([word])).tolist()[0] == 1
 
 
 @app.before_request
