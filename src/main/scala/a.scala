@@ -4,6 +4,7 @@ import purecsv.unsafe.CSVReader
 
 import scala.annotation.tailrec
 import scala.collection.mutable
+import scala.math.min
 
 object Diss {
 
@@ -663,17 +664,17 @@ object Diss {
   }
 
 
-//  //DocId, PageNum
-//  lazy val tableSet = {
-//    val res = scala.collection.mutable.Set[(Int, Int)]()
-//
-//    scala.io.Source.fromFile("ff.tt").getLines().foreach { line =>
-//      val split = line.split("\t")
-//      res.add((split(2).toInt, split(3).toInt))
-//    }
-//
-//    res
-//  }
+  //  //DocId, PageNum
+  //  lazy val tableSet = {
+  //    val res = scala.collection.mutable.Set[(Int, Int)]()
+  //
+  //    scala.io.Source.fromFile("ff.tt").getLines().foreach { line =>
+  //      val split = line.split("\t")
+  //      res.add((split(2).toInt, split(3).toInt))
+  //    }
+  //
+  //    res
+  //  }
 
   //DocId, PageNum
   lazy val tableSet: collection.Set[(Int, Int)] = {
@@ -684,7 +685,7 @@ object Diss {
       res((split(2).toInt, split(3).toInt)) = res((split(2).toInt, split(3).toInt)) + 1
     }
 
-    res.filter(_._2 >= 10) .keySet
+    res.filter(_._2 >= 10).keySet
   }
 
   //doc1, page1, doc2, page2
@@ -977,4 +978,11 @@ object Diss {
       (v("idx").num.toInt -> v("word").str)
     }.toList
   }
+
+  def editDist[A](a: Iterable[A], b: Iterable[A]): Int =
+    ((0 to b.size).toList /: a) ((prev, x) =>
+      (prev zip prev.tail zip b).scanLeft(prev.head + 1) {
+        case (h, ((d, v), y)) => min(min(h + 1, v + 1), d + (if (x == y) 0 else 1))
+      }) last
+
 }
