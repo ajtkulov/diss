@@ -985,4 +985,21 @@ object Diss {
         case (h, ((d, v), y)) => min(min(h + 1, v + 1), d + (if (x == y) 0 else 1))
       }) last
 
+  lazy val generalWords: Set[String] = {
+    scala.io.Source.fromFile("general.txt", "UTF-8").getLines().map(_.split(" ").last.toUpperCase()).toSet
+  }
+
+  lazy val medicineCache: Map[Int, List[(Int, String)]] = {
+    scala.io.Source.fromFile("medcache.txt", "UTF-8").getLines().map { line =>
+      val split = line.split("\t")
+      val id = split.head.toInt
+
+      val other: List[(Int, String)] = split.last.split("/").map { item =>
+        val split = item.split("\\|")
+        split.head.toInt -> split.last
+      }.toList.filter(x => !generalWords.contains(x._2))
+
+      id -> other
+    }.toMap.withDefaultValue(Nil)
+  }
 }
