@@ -30,7 +30,7 @@ object NumSearch {
     val res = list.filter { x =>
       (x.length < 10 && ((x.toLong < 1900 && x.toLong > 10) || (x.toLong > 2030)) || x.startsWith("0"))
     }.filterNot(x => x.forall(_ == '0'))
-    if (res.size <= 3) {
+    if (res.size <= 2) {
       List()
     } else {
       res
