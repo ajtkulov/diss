@@ -55,7 +55,7 @@ object NumSearch {
       val lookFor = s"${hash(str, 5)}\t${hash(str, 7)}\t"
 
       BinSearch.find(fileName, lookFor).toVector.flatMap { offset =>
-        val lines = BinSearch.read(fileName, offset, str)
+        val lines = BinSearch.read(fileName, offset, lookFor)
         lines.map { line =>
           val split = line.split("\t")
           DissPage(split(2).toInt, split(3).toInt)
