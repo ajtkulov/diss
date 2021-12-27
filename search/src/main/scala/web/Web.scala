@@ -1,23 +1,29 @@
 package web
 
 object Web extends cask.MainRoutes {
+  override def port: Int = 8081
+
   @cask.get("/")
-  def hello() = {
+  def hello(): String = {
     "Hello World!"
   }
 
   @cask.postJson("/search")
-  def doThing(data: ujson.Value) = {
+  def search(data: ujson.Value): String = {
     val str = data.str
 
-    str
+    NumSearch.find(str).toString
   }
 
   initialize()
 }
 
 object NumSearch {
-  val fileName = "diss.num.tt"
+  trait TableItem
+
+  case class DissPage(id: Int, page: Int) extends TableItem
+
+  val fileName = "data/diss.num.tt"
 
   def normalize(str: String): List[String] = {
     val list = str.filterNot(x => x == ',' || x == '.').map(x => if (x.isDigit) x else ' ').split(" ").filter(_.nonEmpty).toList
@@ -41,14 +47,22 @@ object NumSearch {
   }
 
 
-  def find(value: String) = {
+  def find(value: String): Vector[(DissPage, Int)] = {
     val numbers = normalize(value)
 
-    numbers.sliding(3, 1).map { triple =>
+    val alls: Vector[DissPage] = numbers.sliding(3, 1).toVector.flatMap { triple =>
       val str = triple.mkString(" ")
       val lookFor = s"${hash(str, 5)}\t${hash(str, 7)}\t"
 
-      BinSearch.find(fileName, lookFor)
+      BinSearch.find(fileName, lookFor).toVector.flatMap { offset =>
+        val lines = BinSearch.read(fileName, offset, str)
+        lines.map { line =>
+          val split = line.split("\t")
+          DissPage(split(2).toInt, split(3).toInt)
+        }
+      }
     }
+
+    alls.groupBy(identity).view.mapValues(_.size).toVector.sortBy(_._2)(Ordering[Int].reverse).take(20)
   }
 }
