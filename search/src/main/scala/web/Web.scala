@@ -37,10 +37,10 @@ object Web extends cask.MainRoutes {
       )
     }
 
-    ujson.Obj {
+    ujson.Obj(
       "byPage" -> ujson.Arr(byPageJson),
       "meta" -> ujson.Arr(metaJson)
-    }
+    )
   }
 
   initialize()
