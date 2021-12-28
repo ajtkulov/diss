@@ -14,17 +14,21 @@ object Web extends cask.MainRoutes {
   def search(data: ujson.Value): String = {
     val str = data.str
 
-    NumSearch.find(str).toString
+    NumSearch.find(str).map { case (x, cnt) =>
+      DissPageItem(RgbSearch.find(x.id).getOrElse(RgbSearch.empty), x.page) -> cnt
+    }.mkString(", ")
   }
 
   initialize()
 }
 
+trait TableItem
+
+case class DissPage(id: Int, page: Int) extends TableItem
+
+case class DissPageItem(rgbId: String, page: Int)
+
 object NumSearch {
-  trait TableItem
-
-  case class DissPage(id: Int, page: Int) extends TableItem
-
   val fileName = "data/diss.num.tt"
 
   def normalize(str: String): List[String] = {
@@ -65,6 +69,20 @@ object NumSearch {
       }
     }
 
-    alls.groupBy(identity).view.mapValues(_.size).toVector.sortBy(_._2)(Ordering[Int].reverse).take(20)
+    val res: Vector[(DissPage, Int)] = alls.groupBy(identity).view.mapValues(_.size).toVector.sortBy(_._2)(Ordering[Int].reverse).take(20)
+
+    res
+  }
+}
+
+object RgbSearch {
+  val empty: String = "00000000000"
+  val fileName = "data/mapping.id.rgb"
+  def find(id: Int): Option[String] = {
+    val lookFor = s"$id\t"
+    BinSearch.find(fileName, lookFor).flatMap { offset =>
+      val lines = BinSearch.read(fileName, offset, lookFor)
+      lines.headOption.map(_.split("\t").last)
+    }
   }
 }
