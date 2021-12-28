@@ -1,5 +1,7 @@
 package web
 
+import ujson.Value
+
 object Web extends cask.MainRoutes {
   override def port: Int = 8081
 
@@ -11,12 +13,34 @@ object Web extends cask.MainRoutes {
   }
 
   @cask.postJson("/search")
-  def search(data: ujson.Value): String = {
+  def search(data: ujson.Value): Value = {
     val str = data.str
 
-    NumSearch.find(str).map { case (x, cnt) =>
+    val pages: Vector[(DissPageItem, Int)] = NumSearch.find(str).map { case (x, cnt) =>
       DissPageItem(RgbSearch.find(x.id).getOrElse(RgbSearch.empty), x.page) -> cnt
-    }.mkString(", ")
+    }
+
+    val meta: Vector[(String, String)] = pages.map(_._1.rgbId).distinct.map {
+      rgbId => rgbId -> MetaDataSearch.find(rgbId).getOrElse(MetaDataSearch.empty)
+    }.sortBy(_._1)
+
+    val byPageJson = pages.map { case (item, cnt) =>
+      ujson.Obj("rgbId" -> item.rgbId,
+        "page" -> item.page,
+        "cnt" -> cnt
+      )
+    }
+
+    val metaJson = meta.map { case (rgbId, m) =>
+      ujson.Obj("rgbId" -> rgbId,
+        "metaData" -> m
+      )
+    }
+
+    ujson.Obj {
+      "byPage" -> ujson.Arr(byPageJson)
+      "meta" -> ujson.Arr(metaJson)
+    }
   }
 
   initialize()
@@ -52,7 +76,6 @@ object NumSearch {
     res
   }
 
-
   def find(value: String): Vector[(DissPage, Int)] = {
     val numbers = normalize(value)
 
@@ -69,20 +92,34 @@ object NumSearch {
       }
     }
 
-    val res: Vector[(DissPage, Int)] = alls.groupBy(identity).view.mapValues(_.size).toVector.sortBy(_._2)(Ordering[Int].reverse).take(20)
-
-    res
+    alls.groupBy(identity).view.mapValues(_.size).toVector.sortBy(_._2)(Ordering[Int].reverse).take(20)
   }
 }
 
 object RgbSearch {
   val empty: String = "00000000000"
   val fileName = "data/mapping.id.rgb"
+
   def find(id: Int): Option[String] = {
     val lookFor = s"$id\t"
     BinSearch.find(fileName, lookFor).flatMap { offset =>
       val lines = BinSearch.read(fileName, offset, lookFor)
       lines.headOption.map(_.split("\t").last)
+    }
+  }
+}
+
+object MetaDataSearch {
+  val empty: String = "NOT_FOUND"
+  val fileName = "data/text.csv.s"
+
+  def find(rgbId: String): Option[String] = {
+    val lookFor = s"$rgbId,"
+    BinSearch.find(fileName, lookFor).flatMap { offset =>
+      val lines = BinSearch.read(fileName, offset, lookFor)
+      lines.headOption.map { line =>
+        line.drop(lookFor.size)
+      }
     }
   }
 }
