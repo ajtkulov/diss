@@ -3,6 +3,8 @@ package web
 object Web extends cask.MainRoutes {
   override def port: Int = 8081
 
+  override def host: String = "0.0.0.0"
+
   @cask.get("/")
   def hello(): String = {
     "Hello World!"
