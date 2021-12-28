@@ -12,6 +12,9 @@ object Web extends cask.MainRoutes {
     "Hello World!"
   }
 
+  @cask.staticFiles("/static/:path")
+  def staticFileRoutes(path: String) = "static/" + path
+
   @cask.postJson("/search")
   def search(data: ujson.Value): Value = {
     val str = data.str
@@ -38,8 +41,8 @@ object Web extends cask.MainRoutes {
     }
 
     ujson.Obj(
-      "byPage" -> ujson.Arr(byPageJson),
-      "meta" -> ujson.Arr(metaJson)
+      "byPage" -> byPageJson,
+      "meta" -> metaJson
     )
   }
 
