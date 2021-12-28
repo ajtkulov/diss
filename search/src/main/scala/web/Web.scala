@@ -25,7 +25,7 @@ object Web extends cask.MainRoutes {
 
     val meta: Vector[(String, String)] = pages.map(_._1.rgbId).distinct.map {
       rgbId => rgbId -> MetaDataSearch.find(rgbId).getOrElse(MetaDataSearch.empty)
-    }.sortBy(_._1)
+    }
 
     val byPageJson: Vector[Obj] = pages.map { case (item, cnt) =>
       ujson.Obj("rgbId" -> item.rgbId,
