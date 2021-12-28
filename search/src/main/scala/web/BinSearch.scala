@@ -49,7 +49,7 @@ object BinSearch {
 
     val index = ar.indexOf(10.toByte) max 0
     val last = ar.lastIndexOf(10.toByte)
-    val res: String = new String(ar.slice(index, last))
+    val res: String = new String(ar.slice(index, last), "UTF-8")
 
     val r = res.split("\n").filter(_.startsWith(search)).toList
     if (r.size > limit) {

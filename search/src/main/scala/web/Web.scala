@@ -1,6 +1,6 @@
 package web
 
-import ujson.Value
+import ujson.{Obj, Value}
 
 object Web extends cask.MainRoutes {
   override def port: Int = 8081
@@ -24,21 +24,21 @@ object Web extends cask.MainRoutes {
       rgbId => rgbId -> MetaDataSearch.find(rgbId).getOrElse(MetaDataSearch.empty)
     }.sortBy(_._1)
 
-    val byPageJson = pages.map { case (item, cnt) =>
+    val byPageJson: Vector[Obj] = pages.map { case (item, cnt) =>
       ujson.Obj("rgbId" -> item.rgbId,
         "page" -> item.page,
         "cnt" -> cnt
       )
     }
 
-    val metaJson = meta.map { case (rgbId, m) =>
+    val metaJson: Vector[Obj] = meta.map { case (rgbId, m) =>
       ujson.Obj("rgbId" -> rgbId,
         "metaData" -> m
       )
     }
 
     ujson.Obj {
-      "byPage" -> ujson.Arr(byPageJson)
+      "byPage" -> ujson.Arr(byPageJson),
       "meta" -> ujson.Arr(metaJson)
     }
   }
