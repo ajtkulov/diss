@@ -29,7 +29,7 @@ object Web extends cask.MainRoutes {
 
     val byPageJson: Vector[Obj] = pages.map { case (item, cnt) =>
       ujson.Obj("rgbId" -> item.rgbId,
-        "page" -> item.page,
+        "page" -> (item.page + 1),
         "cnt" -> cnt
       )
     }

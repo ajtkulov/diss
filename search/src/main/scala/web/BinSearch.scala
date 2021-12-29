@@ -40,7 +40,7 @@ object BinSearch {
     }
   }
 
-  def read(fileName: String, offset: Long, search: String, bufferSize: Int = 5000, limit: Int = 20): List[String] = {
+  def read(fileName: String, offset: Long, search: String, bufferSize: Int = 5000, limit: Int = 200): List[String] = {
     val f = new RandomAccessFile(fileName, "r")
 
     f.seek(offset)

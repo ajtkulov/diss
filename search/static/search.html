@@ -25,22 +25,28 @@
 
 <script type="text/javascript">
 function sendReq() {
-    console.log("123");
 
     var xhr = new XMLHttpRequest();
     var url = window.location.protocol + "//" + window.location.host + "/search";
 
-    console.log(url);
 
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
             var json = JSON.parse(xhr.responseText);
-            document.getElementById('res').textContent = JSON.stringify(json.byPage);
-            document.getElementById('meta').textContent = JSON.stringify(json.meta);
-            console.log(JSON.stringify(json.meta));
-            console.log(json);
+            var text = '';
+            var meta = '';
+            for (v of json.byPage) {
+              text += JSON.stringify(v) + "<br>";
+            }
+
+            for (v of json.meta) {
+              meta += "&#9679;" + JSON.stringify(v) + "<br>";
+            }
+
+            document.getElementById('res').innerHTML = text;
+            document.getElementById('meta').innerHTML = meta;
         }
     };
     var raw = document.getElementById('ta').value;
