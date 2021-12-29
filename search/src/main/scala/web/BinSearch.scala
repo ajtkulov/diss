@@ -58,4 +58,16 @@ object BinSearch {
       r
     }
   }
+
+  def readBlob(fileName: String, offset: Long, bufferSize: Int = 5000): String = {
+    val f = new RandomAccessFile(fileName, "r")
+
+    f.seek(offset)
+    val ar: Array[Byte] = Array.fill[Byte](bufferSize)(0)
+    f.read(ar)
+
+    val index = ar.indexOf(10.toByte) max 0
+    val last = ar.lastIndexOf(10.toByte)
+    new String(ar.slice(index, last), "UTF-8")
+  }
 }

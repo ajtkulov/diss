@@ -80,7 +80,7 @@ object NumSearch {
   }
 
   def find(value: String): Vector[(DissPage, Int)] = {
-    val numbers = normalize(value)
+    val numbers = normalize(value.split("\n").mkString(" "))
 
     val alls: Vector[DissPage] = numbers.sliding(3, 1).toVector.flatMap { triple =>
       val str = triple.mkString(" ")
