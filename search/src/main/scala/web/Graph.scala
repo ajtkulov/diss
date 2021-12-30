@@ -22,7 +22,7 @@ object Graph {
   val fileName = "data/graph.g.s"
 
   def toGraph(main: String, edges: List[Edge]): String = {
-    s"""digraph G {  {    node [];    "$main" [shape = polygon];  }   ${edges.map(_.toEdgeString).mkString(" ") }""".stripMargin
+    s"""digraph G {  {    node [];    "$main" [shape = polygon];  }   ${edges.map(_.toEdgeString).mkString(" ")} }""".stripMargin
   }
 
   def find(ref: String): List[Edge] = {
