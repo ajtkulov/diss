@@ -30,6 +30,8 @@ object BinSearch {
     f.seek(r)
     f.read(ar)
 
+    f.close()
+
     val index = ar.indexOf(10.toByte) max 0
     val res = new String(ar.drop(index + 1))
 
@@ -46,6 +48,8 @@ object BinSearch {
     f.seek(offset)
     val ar: Array[Byte] = Array.fill[Byte](bufferSize)(0)
     f.read(ar)
+
+    f.close()
 
     val index = ar.indexOf(10.toByte) max 0
     val last = ar.lastIndexOf(10.toByte)
@@ -65,6 +69,7 @@ object BinSearch {
     f.seek(offset)
     val ar: Array[Byte] = Array.fill[Byte](bufferSize)(0)
     f.read(ar)
+    f.close()
 
     val index = ar.indexOf(10.toByte) max 0
     val last = ar.lastIndexOf(10.toByte)
