@@ -53,7 +53,7 @@ object Web extends cask.MainRoutes {
 
     val (dotGraph, edges) = Graph.graph(str, w)
 
-    val diss = edges.flatMap(edge => List(edge.source, edge.dest)).distinct.filter(_.startsWith("D"))
+    val diss = edges.flatMap(edge => List(edge.source, edge.dest)).distinct.filter(_.startsWith("D")).map(_.drop(1))
     val metaData = diss.map {
       rgbId => rgbId -> MetaDataSearch.find(rgbId).getOrElse(MetaDataSearch.empty)
     }
