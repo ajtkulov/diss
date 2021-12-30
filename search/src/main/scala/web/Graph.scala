@@ -11,8 +11,8 @@ case class Edge(source: String, dest: String, direction: String, weight: Int) {
 
   def toEdgeString: String = {
     direction match {
-      case "--" => s""""$source" -> "$dest" [label="$weight"];"""
-      case _ => s""""$source" -> "$dest" [label="$weight" dir=both];"""
+      case "--" => s""""$source" -> "$dest" [label="$weight" dir=both];"""
+      case _ => s""""$source" -> "$dest" [label="$weight"];"""
     }
   }
 }
