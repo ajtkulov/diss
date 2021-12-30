@@ -49,7 +49,7 @@ object Graph {
 
     val res: scala.collection.mutable.Set[Edge] = scala.collection.mutable.Set[Edge]()
 
-    while ((layer <= width || frontier.isEmpty) && res.flatMap(x => List(x.source, x.dest)).toSet.size <= 100) {
+    while (layer <= width && frontier.nonEmpty && res.flatMap(x => List(x.source, x.dest)).toSet.size <= 100) {
       val edges = frontier.toList.flatMap(find)
       val newVertexies = edges.map(_.dest).toSet
       frontier = newVertexies -- set
