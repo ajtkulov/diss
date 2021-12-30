@@ -1,7 +1,7 @@
 package web
 
 case class Edge(source: String, dest: String, direction: String, weight: Int) {
-  def normalize = {
+  def normalize: Edge = {
     if (direction == "<-") {
       Edge(dest, source, "->", weight)
     } else {
@@ -58,6 +58,6 @@ object Graph {
       layer = layer + 1
     }
 
-    res.toList.map(_.normalize).distinct
+    res.toList.map(_.normalize).filterNot(_.direction == "<-").distinct
   }
 }
