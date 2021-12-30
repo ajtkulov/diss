@@ -46,6 +46,30 @@ object Web extends cask.MainRoutes {
     )
   }
 
+  @cask.postJson("/graph")
+  def graph(begin: ujson.Value, width: ujson.Value): Value = {
+    val str = begin.str
+    val w = width.num.toInt
+
+    val (dotGraph, edges) = Graph.graph(str, w)
+
+    val diss = edges.flatMap(edge => List(edge.source, edge.dest)).distinct.filter(_.startsWith("D"))
+    val metaData = diss.map {
+      rgbId => rgbId -> MetaDataSearch.find(rgbId).getOrElse(MetaDataSearch.empty)
+    }
+
+    val metaJson: List[Obj] = metaData.map { case (rgbId, m) =>
+      ujson.Obj("rgbId" -> rgbId,
+        "metaData" -> m
+      )
+    }
+
+    ujson.Obj(
+      "graph" -> dotGraph,
+      "meta" -> metaJson
+    )
+  }
+
   initialize()
 }
 
