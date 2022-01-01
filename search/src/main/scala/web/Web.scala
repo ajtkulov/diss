@@ -53,13 +53,17 @@ object Web extends cask.MainRoutes {
 
     val (dotGraph, edges) = Graph.graph(str, w)
 
-    val diss = edges.flatMap(edge => List(edge.source, edge.dest)).distinct.filter(_.startsWith("D")).map(_.drop(1))
-    val metaData = diss.map {
+    val diss: List[String] = edges.flatMap(edge => List(edge.source, edge.dest)).distinct.filter(_.startsWith("D")).map(_.drop(1))
+    val CLIds: List[String] = edges.flatMap(edge => List(edge.source, edge.dest)).distinct.filter(_.startsWith("C")).map(_.drop(1))
+    val metaData: List[(String, String)] = diss.map {
       rgbId => rgbId -> MetaDataSearch.find(rgbId).getOrElse(MetaDataSearch.empty)
     }
+    val clMetaData: List[(String, String)] = CLIds.map {
+      clId => clId -> CyberMetaData.findAll(clId).getOrElse(CyberMetaData.empty)
+    }
 
-    val metaJson: List[Obj] = metaData.map { case (rgbId, m) =>
-      ujson.Obj("rgbId" -> rgbId,
+    val metaJson: List[Obj] = (metaData ++ clMetaData).sortBy(_._1).map { case (id, m) =>
+      ujson.Obj("id" -> id,
         "metaData" -> m
       )
     }
