@@ -35,13 +35,13 @@ object Graph {
     }
   }
 
-  def graph(ref: String, width: Int): (String, List[Edge]) = {
-    val edges = bfs(ref, width)
+  def graph(ref: String, width: Int, threshold: Int): (String, List[Edge]) = {
+    val edges = bfs(ref, width, threshold)
 
     (toGraph(ref, edges), edges)
   }
 
-  def bfs(ref: String, width: Int): List[Edge] = {
+  def bfs(ref: String, width: Int, threshold: Int): List[Edge] = {
     var layer = 1
 
     var set = Set(ref)
@@ -50,9 +50,9 @@ object Graph {
     val res: scala.collection.mutable.Set[Edge] = scala.collection.mutable.Set[Edge]()
 
     while (layer <= width && frontier.nonEmpty && res.flatMap(x => List(x.source, x.dest)).toSet.size <= 100) {
-      val edges = frontier.toList.flatMap(find)
-      val newVertexies = edges.map(_.dest).toSet
-      frontier = newVertexies -- set
+      val edges = frontier.toList.flatMap(find).filter(_.weight >= threshold)
+      val newVertices = edges.map(_.dest).toSet
+      frontier = newVertices -- set
       set = set ++ frontier
       res.addAll(edges)
       layer = layer + 1

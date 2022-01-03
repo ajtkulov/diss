@@ -47,11 +47,12 @@ object Web extends cask.MainRoutes {
   }
 
   @cask.postJson("/graph")
-  def graph(begin: ujson.Value, width: ujson.Value): Value = {
+  def graph(begin: ujson.Value, width: ujson.Value, threshold: ujson.Value): Value = {
     val str = begin.str
     val w = width.num.toInt
+    val weightThreshold = threshold.num.toInt
 
-    val (dotGraph, edges) = Graph.graph(str, w)
+    val (dotGraph, edges) = Graph.graph(str, w, weightThreshold)
 
     val diss: List[String] = edges.flatMap(edge => List(edge.source, edge.dest)).distinct.filter(_.startsWith("D")).map(_.drop(1))
     val CLIds: List[String] = edges.flatMap(edge => List(edge.source, edge.dest)).distinct.filter(_.startsWith("C")).map(_.drop(1))
