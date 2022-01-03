@@ -1,0 +1,64 @@
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>
+<script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"></script>
+
+
+<div id="graph"  style="width:1864px;text-align: center;"></div>
+
+<form>
+start:
+<input id="ref" value="D01000206563">
+
+width: <select name="width" id="width">
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+</select>
+
+threshold:
+<input id="threshold" value="0">
+</form>
+
+<input type="button" onclick="sendReq()" value="submit" >
+
+
+<div id="meta"></div>
+
+
+<script>
+
+function draw(graph) {
+  d3.select("#graph").graphviz().renderDot(graph);
+}
+
+
+function sendReq() {
+
+    var xhr = new XMLHttpRequest();
+    var url = window.location.protocol + "//" + window.location.host + "/graph";
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            var json = JSON.parse(xhr.responseText);
+            var meta = '';
+
+            draw(json.graph);
+
+            for (v of json.meta) {
+              meta += "&#9679;" + JSON.stringify(v) + "<br>";
+            }
+
+            document.getElementById('meta').innerHTML = meta;
+        }
+    };
+    var ref = document.getElementById('ref').value;
+    var width = parseInt(document.getElementById('width').value);
+    var threshold = parseInt(document.getElementById('threshold').value);
+    var data = JSON.stringify({"begin": ref, "width": width, "threshold": threshold});
+    xhr.send(data);
+
+}
+
+
+</script>
