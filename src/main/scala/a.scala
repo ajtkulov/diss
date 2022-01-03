@@ -1002,4 +1002,16 @@ object Diss {
       id -> other
     }.toMap.withDefaultValue(Nil)
   }
+
+  lazy val textGraph: mutable.Map[(String, String), Res] = {
+    val map = scala.collection.mutable.Map[(String, String), Int]().withDefaultValue(0)
+    scala.io.Source.fromFile("graph.g.s").getLines.foreach { line =>
+      val split = line.split("\t")
+      if (split.head.startsWith("D") && split(2).startsWith("D")) {
+        map(split.head.drop(1) -> split(2).drop(1)) = split(3).toInt
+      }
+    }
+
+    map
+  }
 }
