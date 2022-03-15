@@ -765,7 +765,7 @@ object Diss {
       case _ => a.size - 10
     }
 
-    zip.slice(dropFirst, endPos).map(_._1).mkString("")
+    zip.slice(dropFirst, endPos).map(_._1).mkString(12.toChar.toString)
   }
 
   def extractPageContext(ref: DissRef, page: Int): List[String] = {
