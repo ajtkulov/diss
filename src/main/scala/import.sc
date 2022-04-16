@@ -19,3 +19,5 @@ import scala.annotation.tailrec
 
 import $ivy.`com.lihaoyi::requests:0.7.0`
 import $ivy.`com.lihaoyi::ujson:0.7.1`
+
+import $ivy.`com.clearspring.analytics:stream:2.9.8`

@@ -1,3 +1,5 @@
+import org.slf4j.LoggerFactory
+
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Try
 import purecsv.unsafe.CSVReader
@@ -7,6 +9,22 @@ import scala.collection.mutable
 import scala.math.min
 
 object Diss {
+
+  case class CountingIterator[T](iterator: Iterator[T], footstep: Int = 1000000) extends Iterator[T] {
+    var count: Long = 0
+
+    override def hasNext: Boolean = iterator.hasNext
+
+    override def next(): T = {
+      count = count + 1
+      if (count % footstep == 0) {
+        println(s"Iterator've moved ${count} steps.")
+      }
+
+      iterator.next()
+    }
+  }
+
 
   case class GroupIterator[T, K, V](iter: Iterator[T], split: T => (K, V), reduce: (V, V) => V) extends Iterator[(K, V)] {
     var currentOutputKey: Option[K] = None
