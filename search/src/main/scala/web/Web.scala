@@ -75,6 +75,18 @@ object Web extends cask.MainRoutes {
     )
   }
 
+  @cask.postJson("/color")
+  def color(fst: ujson.Value, snd: ujson.Value): Value = {
+    val f = fst.str
+    val s = snd.str
+
+    val (res1, res2) = Color.color(f, s)
+    ujson.Obj(
+      "fst" -> res1,
+      "snd" -> res2,
+    )
+  }
+
   initialize()
 }
 
