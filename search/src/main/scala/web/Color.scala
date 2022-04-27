@@ -1,5 +1,7 @@
 package web
 
+import scala.collection.mutable.ArrayBuffer
+
 object Color {
   type Hash = (Int, Int)
 
@@ -51,7 +53,7 @@ object Color {
     output.map(c => if (c.isLetter) c else ' ').split(" ").filter(_.nonEmpty).toVector
   }
 
-  def color(fst: String, snd: String) = {
+  def color(fst: String, snd: String): (String, String) = {
     val fn: Vector[String] = normalize(fst)
     val sn: Vector[String] = normalize(snd)
 
@@ -75,24 +77,50 @@ object Color {
       Vector.range(idx, idx + 5)
     }.toSet
 
-    val fcolor = fn1.zipWithIndex.map { case (w, idx) =>
-      if (fres.contains(idx)) {
-        s"<span style='background-color:#B2A6DA'>$w</span>"
+    val ff1: List[((String, Int), Boolean)] = fn1.zipWithIndex.map(x => x -> fres.contains(x._2)).toList
+
+    val ss1: List[((String, Int), Boolean)] = sn1.zipWithIndex.map(x => x -> sres.contains(x._2)).toList
+
+    val fcolor: List[String] = grouping[((String, Int), Boolean)](ff1, (a, b) => a._2 == b._2).map { list =>
+      if (list.head._2) {
+        s"<span style='background-color:#B2A6DA'>${list.map(_._1._1).mkString(" ")}</span>"
       } else {
-        w
+        list.map(_._1._1).mkString(" ")
       }
     }
 
-    val scolor = sn1.zipWithIndex.map { case (w, idx) =>
-      if (sres.contains(idx)) {
-        s"<span style='background-color:#B2A6DA'>$w</span>"
+    val scolor = grouping[((String, Int), Boolean)](ss1, (a, b) => a._2 == b._2).map { list =>
+      if (list.head._2) {
+        s"<span style='background-color:#B2A6DA'>${list.map(_._1._1).mkString(" ")}</span>"
       } else {
-        w
+        list.map(_._1._1).mkString(" ")
       }
     }
 
     (fcolor.mkString(" "), scolor.mkString(" "))
   }
+
+  def grouping[T](sorted: List[T], sameGroupFunc: (T, T) => Boolean): List[List[T]] = {
+    if (sorted.isEmpty) {
+      List()
+    } else {
+      val res = ArrayBuffer[ArrayBuffer[T]]()
+
+      res.append(ArrayBuffer())
+      res.last.append(sorted.head)
+      for (item <- sorted.drop(1)) {
+        if (sameGroupFunc(res.last.last, item)) {
+          res.last.append(item)
+        } else {
+          res.append(ArrayBuffer())
+          res.last.append(item)
+        }
+      }
+
+      res.map(_.toList).toList
+    }
+  }
+
 
 }
 
