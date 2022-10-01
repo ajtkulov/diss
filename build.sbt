@@ -2,6 +2,9 @@ name := "dis"
 
 version := "1.0.0-SNAPSHOT"
 
+run / javaOptions += "-Xmx16G"
+
+javaOptions in(Test, run) += "-Xmx16G"
 
 
 resolvers += Resolver.sonatypeRepo("releases")
@@ -30,3 +33,9 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies += "com.clearspring.analytics" % "stream" % "2.9.8"
+
+// https://mvnrepository.com/artifact/com.typesafe.play/play-json
+libraryDependencies += "com.typesafe.play" %% "play-json" % "2.10.0-RC6"
+
+// https://mvnrepository.com/artifact/joda-time/joda-time
+libraryDependencies += "joda-time" % "joda-time" % "2.10.14"

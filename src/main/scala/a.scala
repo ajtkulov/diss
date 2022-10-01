@@ -380,7 +380,7 @@ object Diss {
     }
   }
 
-  sealed trait BaseR {}
+  sealed trait BaseR {def id: Int}
 
   case class DissRef(id: Int) extends BaseR {}
 
