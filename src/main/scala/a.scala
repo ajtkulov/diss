@@ -1,6 +1,3 @@
-import org.slf4j.LoggerFactory
-
-import scala.collection.mutable.ArrayBuffer
 import scala.util.Try
 import purecsv.unsafe.CSVReader
 
