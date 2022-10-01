@@ -366,7 +366,7 @@ object Diss {
     }
 
     def getLastName(dissRef: DissRef): String = {
-      meta2(all_back(dissRef.id).dropRight(4)).lastName
+      Try{meta2(all_back(dissRef.id).dropRight(4)).lastName}.getOrElse("")
     }
 
     def diffLastName(baseRef: BaseR, lastName: String): Boolean = {
