@@ -266,7 +266,7 @@ object Diss {
   lazy val meta2all: Vector[MetaData2] = MetaData2.fromFile("text.csv").toVector
 
   def getDissMeta(id: Int): MetaData2 = {
-    meta2(all_back(id).dropRight(4))
+    Try{meta2(all_back(id).dropRight(4))}.getOrElse(MetaData2.err)
   }
 
 
