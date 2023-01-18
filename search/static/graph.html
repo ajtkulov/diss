@@ -1,8 +1,26 @@
+
+<!DOCTYPE html>
+<html prefix="og: //ogp.me/ns#">
+<head>
+    <meta charset="utf-8"/>
+    <title>Graph</title>
+
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>
 <script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"></script>
 
-
+</head>
+<body>
+    <div id="help">
+        Строит граф заимствований между Диссертациями и/или статьями из КиберЛенинки. Полезно видеть полную цепочку копирований. <br>
+        &nbsp;&nbsp;&nbsp; Параметры: <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; start: работа под подозрением (например, D01000206563/C981352) - D/C признак Диссертации/Киберленинки. <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       01000206563 - идентификатор из РГБ, 981352 - искуственный идентификатор для Киберленинки <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;width: ширина графа, 1-2-3, начинайте с 1 <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;threshold: фильтр на размер ребра в попугаях (0 = нет порога). 1 страница примерно 100 попугаев. Иногда стоит отсекать от 500 попугаев, 5 страниц <br>
+    </div>
+<br>
+<br>
 <div id="graph"  style="width:1864px;text-align: center;"></div>
 
 <form>
@@ -16,7 +34,7 @@ width: <select name="width" id="width">
 </select>
 
 threshold:
-<input id="threshold" value="0">
+<input id="threshold" value="0" size="10" >
 </form>
 
 <input type="button" onclick="sendReq()" value="submit" >
@@ -62,3 +80,5 @@ function sendReq() {
 
 
 </script>
+</body>
+</html>
