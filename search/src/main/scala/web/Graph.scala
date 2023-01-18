@@ -4,6 +4,10 @@ case class Edge(source: String, dest: String, direction: String, weight: Int) {
   def normalize: Edge = {
     if (direction == "<-") {
       Edge(dest, source, "->", weight)
+    } else if (direction == "--") {
+      val min = List(source, dest).min
+      val max = List(source, dest).max
+      Edge(min, max, direction, weight)
     } else {
       this
     }
