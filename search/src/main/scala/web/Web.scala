@@ -87,6 +87,21 @@ object Web extends cask.MainRoutes {
     )
   }
 
+  @cask.get("/download/:id")
+  def download(id: String) = {
+    import scala.sys.process._
+
+    scala.util.Try {
+      Process(s"/usr/bin/aws s3 cp s3://diss-bucket/dissers-txt/${id}.txt /tmp/").!!
+      ujson.Obj(
+        "id" -> id
+      )
+    }.getOrElse(ujson.Obj(
+      "id" -> "error"
+    ))
+  }
+
+
   initialize()
 }
 
