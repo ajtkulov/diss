@@ -92,7 +92,10 @@ object Web extends cask.MainRoutes {
     import scala.sys.process._
 
     scala.util.Try {
-      Process(s"/usr/bin/aws s3 cp s3://diss-bucket/dissers-txt/${id}.txt /tmp/").!!
+      val path = s"/var/www/tools/temp/$id.txt"
+      val dir = "/var/www/tools/temp/"
+      Process(s"/usr/bin/aws s3 cp s3://diss-bucket/dissers-txt/${id}.txt $dir").!!
+      Process(s"chown arostovtsev $path").!!
       ujson.Obj(
         "id" -> id
       )
@@ -100,7 +103,6 @@ object Web extends cask.MainRoutes {
       "id" -> "error"
     ))
   }
-
 
   initialize()
 }
