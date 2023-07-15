@@ -90,16 +90,26 @@ object Web extends cask.MainRoutes {
   @cask.get("/download/:id")
   def download(id: String) = {
     import scala.sys.process._
+    val dir = "/var/www/tools/temp/"
 
     scala.util.Try {
+      val path = s"/var/www/tools/temp/$id.pdf"
+      val h1 = id.take(2)
+      val h2 = id.drop(2).take(4)
+      val h3 = id.drop(6).take(2)
+      Process(s"/usr/bin/aws s3 cp s3://diss-bucket/disserclub-dissbackup/$h1/$h2/$h3/${id}.pdf $dir").!!
+      Process(s"chown arostovtsev $path").!!
+      ujson.Obj(
+        "id" -> s"$id.pdf"
+      )
+    }.recover { t =>
       val path = s"/var/www/tools/temp/$id.txt"
-      val dir = "/var/www/tools/temp/"
       Process(s"/usr/bin/aws s3 cp s3://diss-bucket/dissers-txt/${id}.txt $dir").!!
       Process(s"chown arostovtsev $path").!!
       ujson.Obj(
-        "id" -> id
+        "id" -> s"$id.txt"
       )
-    }.getOrElse(ujson.Obj(
+    } .getOrElse(ujson.Obj(
       "id" -> "error"
     ))
   }
