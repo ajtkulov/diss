@@ -11,6 +11,28 @@ case class Person(id: Int, firstName: String, lastName: String, birthDate: Strin
     "lastName" -> lastName,
     "birthDate" -> birthDate
   )
+
+  def birthYear: Int = {
+    scala.util.Try {
+      birthDate.split(".").last.toInt
+    }.getOrElse(0)
+  }
+}
+
+object Person {
+  implicit val Compare = new Ordering[Person] {
+    override def compare(x: Person, y: Person): Int = {
+      val lastNameCompare = x.lastName.compare(y.lastName)
+      val firstNameCompare = x.firstName.compare(y.firstName)
+      val birthDateCompare = x.birthYear.compare(y.birthYear)
+
+      (lastNameCompare, firstNameCompare, birthDateCompare) match {
+        case (l, _, _) if l != 0 => l
+        case (0, l, _) if l != 0 => l
+        case (0, 0, l) => l
+      }
+    }
+  }
 }
 
 object SWeb extends cask.MainRoutes {
@@ -40,7 +62,8 @@ object SWeb extends cask.MainRoutes {
 
   @cask.postJson("/findPerson")
   def findPerson(firstName: ujson.Value, lastName: ujson.Value, birthDate: ujson.Value): Value = {
-    val find = people.iterator.filter(p => p.firstName.contains(firstName.str.toUpperCase) && p.lastName.contains(lastName.str.toUpperCase) && p.birthDate.contains(birthDate.str)).take(500).toVector
+    val find = people.iterator.filter(p => p.firstName.contains(firstName.str.toUpperCase) && p.lastName.contains(lastName.str.toUpperCase) &&
+      p.birthDate.contains(birthDate.str)).take(500).toVector.sortBy(identity)(Person.Compare)
     find.map(_.toJson)
   }
 

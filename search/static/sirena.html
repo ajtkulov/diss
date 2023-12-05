@@ -28,10 +28,14 @@
 <br>
 <br>
 
-<div id="findRes">
+Fellow travelers:
+<div id="findFlight"></div>
 
+<br>
+<br>
 
-</div>
+Person:
+<div id="findRes"></div>
 
 </body>
 
@@ -74,13 +78,15 @@ function sendId() {
               text += JSON.stringify(v) + "<br>";
             }
 
-            document.getElementById('findRes').innerHTML = text;
+            document.getElementById('findFlight').innerHTML = text;
         }
     };
     var id = document.getElementById('person').value;
     var data = JSON.stringify({"id": id});
     xhr.send(data);
 }
+
+
 
 
 
