@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search</title>
+</head>
+<body>
+
+<div>
+    <form>
+        FirstName: <input id="firstName" type="text" value="">
+        LastName: <input id="lastName" type="text" value="">
+        BirthDate: <input id="birthDate" type="text" value="">
+        <input type="button" onclick="sendReq()" value="submit">
+    </form>
+</div>
+
+<br>
+<br>
+
+<div>
+    <form>
+        Id: <input id="person" type="text" value="">
+        <input type="button" onclick="sendId()" value="submit">
+    </form>
+</div>
+
+<br>
+<br>
+
+<div id="findRes">
+
+
+</div>
+
+</body>
+
+<script type="text/javascript">
+function sendReq() {
+    var xhr = new XMLHttpRequest();
+    var url = window.location.protocol + "//" + window.location.host + "/findPerson";
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            var json = JSON.parse(xhr.responseText);
+            var text = '';
+            var meta = '';
+            for (v of json) {
+              text += JSON.stringify(v) + "<br>";
+            }
+
+            document.getElementById('findRes').innerHTML = text;
+        }
+    };
+    var lastName = document.getElementById('lastName').value;
+    var firstName = document.getElementById('firstName').value;
+    var birthDate = document.getElementById('birthDate').value;
+    var data = JSON.stringify({"lastName": lastName, "firstName": firstName, "birthDate": birthDate});
+    xhr.send(data);
+}
+
+function sendId() {
+    var xhr = new XMLHttpRequest();
+    var url = window.location.protocol + "//" + window.location.host + "/find";
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            var json = JSON.parse(xhr.responseText);
+            var text = '';
+            var meta = '';
+            for (v of json) {
+              text += JSON.stringify(v) + "<br>";
+            }
+
+            document.getElementById('findRes').innerHTML = text;
+        }
+    };
+    var id = document.getElementById('person').value;
+    var data = JSON.stringify({"id": id});
+    xhr.send(data);
+}
+
+
+
+</script>
+</html>
