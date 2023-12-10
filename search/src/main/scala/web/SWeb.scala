@@ -14,7 +14,7 @@ case class Person(id: Int, firstName: String, lastName: String, birthDate: Strin
 
   def birthYear: Int = {
     scala.util.Try {
-      birthDate.split(".").last.toInt
+      birthDate.split("\\.").last.toInt
     }.getOrElse(0)
   }
 }
