@@ -994,11 +994,13 @@ object Diss {
     }.toList
   }
 
+  import scala.math.min
   def editDist[A](a: Iterable[A], b: Iterable[A]): Int =
-    ((0 to b.size).toList /: a) ((prev, x) =>
+    a.foldLeft((0 to b.size).toList) { (prev, x) =>
       (prev zip prev.tail zip b).scanLeft(prev.head + 1) {
         case (h, ((d, v), y)) => min(min(h + 1, v + 1), d + (if (x == y) 0 else 1))
-      }) last
+      }
+    }.last
 
   lazy val generalWords: Set[String] = {
     scala.io.Source.fromFile("general.txt", "UTF-8").getLines().map(_.split(" ").last.toUpperCase()).toSet
