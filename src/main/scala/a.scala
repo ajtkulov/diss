@@ -152,6 +152,11 @@ object Diss {
       list(dir).map(fileName => s"$dir/$fileName")
     }
 
+    def traverse(dir: String): Vector[FileName] = {
+      val names: Vector[FileName] = Directory(dir).dirs.toVector.map(_.toAbsolute.name).flatMap(d => traverse(s"$dir/$d"))
+      fullList(dir).toVector ++ names
+    }
+
     def fromFile(filePath: FileName, encoding: String = "iso-8859-1"): Iterator[String] = scala.io.Source.fromFile(filePath, encoding).getLines
 
     def readFile(filePath: FileName, encoding: String = "iso-8859-1"): String = fromFile(filePath, encoding).mkString("\n")
