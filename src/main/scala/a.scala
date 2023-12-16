@@ -746,7 +746,7 @@ object Diss {
     import java.io._
     val br = new BufferedReader(new InputStreamReader(
       new FileInputStream(fileName), "UTF-8"))
-    val res = br.lines().toArray.toList.map(_.toString).mkString("")
+    val res = br.lines().toArray.toList.map(_.toString).mkString(" ")
     br.close()
     res
   }
