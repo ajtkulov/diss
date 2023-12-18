@@ -21,9 +21,17 @@ case class Edge(source: String, dest: String, direction: String, weight: Int) {
   }
 }
 
-object Graph {
+object Graph extends GraphTrait {
+  val fileName: String = "data/graph.g.s"
+}
+
+object GraphUA extends GraphTrait {
+  val fileName: String = "data/ua.hash.7.all.graph"
+}
+
+trait GraphTrait {
   val empty: String = "NOT_FOUND"
-  val fileName = "data/graph.g.s"
+  val fileName: String
 
   def toGraph(main: String, edges: List[Edge]): String = {
     s"""digraph G {  {    node [];    "$main" [shape = polygon];  }   ${edges.map(_.toEdgeString).mkString(" ")} }""".stripMargin

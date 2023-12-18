@@ -75,6 +75,31 @@ object Web extends cask.MainRoutes {
     )
   }
 
+  @cask.postJson("/graphUA")
+  def graphUA(begin: ujson.Value, width: ujson.Value, threshold: ujson.Value): Value = {
+    val str = begin.str
+    val w = width.num.toInt
+    val weightThreshold = threshold.num.toInt
+
+    val (dotGraph, edges) = GraphUA.graph(str, w, weightThreshold)
+
+    val diss: List[String] = edges.flatMap(edge => List(edge.source, edge.dest)).distinct
+    val metaData: List[(String, String)] = diss.map {
+      rgbId => rgbId -> MetaDataSearchUA.find(rgbId).getOrElse(MetaDataSearch.empty)
+    }
+
+    val metaJson: List[Obj] = metaData.sortBy(_._1).map { case (id, m) =>
+      ujson.Obj("id" -> id,
+        "metaData" -> m
+      )
+    }
+
+    ujson.Obj(
+      "graph" -> dotGraph,
+      "meta" -> metaJson
+    )
+  }
+
   @cask.postJson("/color")
   def color(fst: ujson.Value, snd: ujson.Value): Value = {
     val f = fst.str
@@ -109,7 +134,7 @@ object Web extends cask.MainRoutes {
       ujson.Obj(
         "id" -> s"$id.txt"
       )
-    } .getOrElse(ujson.Obj(
+    }.getOrElse(ujson.Obj(
       "id" -> "error"
     ))
   }
@@ -180,17 +205,31 @@ object RgbSearch {
   }
 }
 
-object MetaDataSearch {
+trait MetaDataSearchTrait {
   val empty: String = "NOT_FOUND"
-  val fileName = "data/text.csv.s"
+  val fileName: String
+  val separator: String
+  def app: (String => String)
 
   def find(rgbId: String): Option[String] = {
-    val lookFor = s"$rgbId,"
+    val lookFor = s"$rgbId$separator"
     BinSearch.find(fileName, lookFor).flatMap { offset =>
       val lines = BinSearch.read(fileName, offset, lookFor)
       lines.headOption.map { line =>
-        line.drop(lookFor.size)
+        app(line.drop(lookFor.size))
       }
     }
   }
+}
+
+object MetaDataSearch extends MetaDataSearchTrait {
+  val fileName = "data/text.csv.s"
+  val separator: String = ","
+  def app = identity
+}
+
+object MetaDataSearchUA extends MetaDataSearchTrait {
+  val fileName = "data/metadata.csv"
+  val separator: String = "\t"
+  def app = identity
 }
