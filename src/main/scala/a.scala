@@ -268,7 +268,9 @@ object Diss {
   lazy val meta2all: Vector[MetaData2] = MetaData2.fromFile("text.csv").toVector
 
   def getDissMeta(id: Int): MetaData2 = {
-    Try{meta2(all_back(id).dropRight(4))}.getOrElse(MetaData2.err)
+    Try {
+      meta2(all_back(id).dropRight(4))
+    }.getOrElse(MetaData2.err)
   }
 
 
@@ -371,7 +373,9 @@ object Diss {
     }
 
     def getLastName(dissRef: DissRef): String = {
-      Try{meta2(all_back(dissRef.id).dropRight(4)).lastName}.getOrElse("")
+      Try {
+        meta2(all_back(dissRef.id).dropRight(4)).lastName
+      }.getOrElse("")
     }
 
     def diffLastName(baseRef: BaseR, lastName: String): Boolean = {
@@ -385,7 +389,9 @@ object Diss {
     }
   }
 
-  sealed trait BaseR {def id: Int}
+  sealed trait BaseR {
+    def id: Int
+  }
 
   case class DissRef(id: Int) extends BaseR {}
 
@@ -1000,6 +1006,7 @@ object Diss {
   }
 
   import scala.math.min
+
   def editDist[A](a: Iterable[A], b: Iterable[A]): Int =
     a.foldLeft((0 to b.size).toList) { (prev, x) =>
       (prev zip prev.tail zip b).scanLeft(prev.head + 1) {
@@ -1035,5 +1042,33 @@ object Diss {
     }
 
     map
+  }
+}
+
+object UaMeta {
+  case class UaMeta(id: String, author: String, fullDate: String, title: String) {
+    lazy val year: Int = fullDate.split("-").head.toInt
+
+    lazy val spec: String = title.drop(title.indexOf("spec.. ") + 7).takeWhile(c => c == '.' || c.isDigit)
+  }
+
+  lazy val uaMetaVec: Vector[UaMeta] = {
+    scala.io.Source.fromFile("metadata.csv", "UTF-8").getLines.map { line =>
+      val split = line.split("\t")
+      UaMeta(split(0), split(2), split(3), split(4))
+    }.toVector
+  }
+
+  lazy val uaMeta: Map[String, UaMeta] = uaMetaVec.map(x => x.id -> x).toMap
+
+  lazy val idUaMap: Map[Int, String] = uaMetaVec.zipWithIndex.map { case (m, id) => id -> m.id }.toMap
+  lazy val idUaRevMap: Map[String, Int] = uaMetaVec.zipWithIndex.map { case (m, id) => m.id -> id }.toMap
+
+  def getUaMetaById(id: Int): UaMeta = {
+    uaMeta(idUaMap(id))
+  }
+
+  def getUaMetaByStringId(id: String): UaMeta = {
+    uaMeta(id)
   }
 }
