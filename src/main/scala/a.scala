@@ -1071,4 +1071,19 @@ object UaMeta {
   def getUaMetaByStringId(id: String): UaMeta = {
     uaMeta(id)
   }
+
+  def extractUaFromPath(path: String) = {
+    path.split("/").dropRight(1).last
+  }
+
+  lazy val autoRefSet = Set("ref", "реферат", "avto")
+
+  def isAutoRefUA(path: String): Boolean = {
+    val fileName = path.split("/").last.toLowerCase
+    autoRefSet.exists(x => fileName.contains(x))
+  }
+
+  def convertNgUa(str: String): String = {
+    str.filter(ch => ch == ' ' || (ch >= 'а' && ch <= 'Я') || (ch >= '\u0410' && ch <= '\u044F')).toUpperCase
+  }
 }
