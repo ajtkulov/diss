@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html prefix="og: //ogp.me/ns#">
+<head>
+    <meta charset="utf-8"/>
+    <title>Ua text search</title>
+</head>
+
+<body>
+<div id="help">
+    Вставьте текст статьи для поиска по украинским диссертациям и переводу на русский язык
+</div>
+
+<form>
+<textarea id="ta" rows="30" cols="130"></textarea>
+
+
+<input type="button" onclick="sendReq()" value="submit" >
+</form>
+
+Res:
+<div id="res"></div>
+
+
+<br>
+
+<div id="meta"></div>
+
+
+</body>
+
+
+<script type="text/javascript">
+function sendReq() {
+
+    var xhr = new XMLHttpRequest();
+    var url = window.location.protocol + "//" + window.location.host + "/uasearch";
+
+
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            var json = JSON.parse(xhr.responseText);
+            var text = '';
+            var meta = '';
+            document.getElementById('res').innerHTML = json.top;
+        }
+    };
+    var raw = document.getElementById('ta').value;
+    var data = JSON.stringify({"data": raw});
+    xhr.send(data);
+
+}
+
+</script>
+</html>

@@ -77,7 +77,8 @@ def main():
         split = line.strip().split("\t")
         p = split[0][4:]
         dir_id = int(p.split("/")[0])
-        if dir_id % partition_total == partition:
+        h = abs(hash(p))
+        if h % partition_total == partition:
             input_path = path_prefix + '/' + p
             output_path = output_path_prefix + '/' + p
             output_path_dir = os.path.dirname(output_path)

@@ -46,6 +46,59 @@ object Web extends cask.MainRoutes {
     )
   }
 
+  def hash(str: String, seed: Int): Int = {
+    var res = 1
+    for (c <- str) {
+      res = res * seed + c.toInt
+    }
+
+    res
+  }
+
+  def convertNgUa(str: String): String = {
+    str.filter(ch => ch == ' ' || (ch >= 'а' && ch <= 'Я') || (ch >= '\u0410' && ch <= '\u044F')).toUpperCase
+  }
+
+  def hashes(text: String): Vector[String] = {
+    val norm: Iterator[String] = convertNgUa(text).split(" ").filter(_.nonEmpty).mkString(" ").split(" ").sliding(6).map(_.mkString(" ")).filter(_.size >= 20)
+    norm.flatMap { ng =>
+      val h5 = hash(ng, 5)
+      val h7 = hash(ng, 7)
+      val sum = (h5.toLong << 32) + h7
+      if ((scala.math.abs(sum) % 10) == 0) {
+        Some(s"${h5}\t${h7}\t")
+      } else {
+        None
+      }
+    }.toVector
+  }
+
+  lazy val uaIndexFile = "data/ua.rua.hash.sort"
+
+  @cask.postJson("/uasearch")
+  def uasearch(data: ujson.Value): Value = {
+    val str = data.str
+
+    val h: Vector[String] = hashes(str)
+
+    val scores: Vector[String] = h.flatMap { hh: String =>
+      BinSearch.find(uaIndexFile, hh).toList.flatMap { offset =>
+        val lines = BinSearch.read(uaIndexFile, offset, hh)
+        if (lines.size <= 8) {
+          lines.map(_.split("\t").last)
+        } else {
+          Nil
+        }
+      }
+    }
+
+    val res = scores.groupBy(identity).mapValues(_.size).toVector.sortBy(_._2)(Ordering[Int].reverse).take(5).mkString("[", ", ", "]")
+
+    ujson.Obj(
+      "top" -> res
+    )
+  }
+
   @cask.postJson("/graph")
   def graph(begin: ujson.Value, width: ujson.Value, threshold: ujson.Value): Value = {
     val str = begin.str
