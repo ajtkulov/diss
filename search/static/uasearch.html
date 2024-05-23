@@ -17,8 +17,13 @@
 <input type="button" onclick="sendReq()" value="submit" >
 </form>
 
+<br>
+<br>
+
+
 <form id="uploadForm">
-    <label for="file">Choose file to upload:</label>
+    <label for="file">Или выберите файл для загрузки:</label>
+    <br>
     <input type="file" id="file" name="file" required>
     <br><br>
     <button type="submit">Upload File</button>
@@ -58,9 +63,9 @@ Res:
                 body: formData
             })
             .then(response => response.json())
-            .then(data =>
+            .then(data => {
                 document.getElementById('res').innerHTML = data.top;
-            )
+            })
             .catch(error => {
                 console.error('Error:', error);
                 alert('An error occurred while uploading the file.');
