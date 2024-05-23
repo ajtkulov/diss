@@ -79,6 +79,10 @@ object Web extends cask.MainRoutes {
   def uasearch(data: ujson.Value): Value = {
     val str = data.str
 
+    uaSearch(str)
+  }
+
+  def uaSearch(str: String): Obj = {
     val h: Vector[String] = hashes(str)
 
     val scores: Vector[String] = h.flatMap { hh: String =>
@@ -97,6 +101,13 @@ object Web extends cask.MainRoutes {
     ujson.Obj(
       "top" -> res
     )
+  }
+
+  @cask.postForm("/uploadUa")
+  def uploadFile(file: cask.FormFile): Obj = {
+    println(file.filePath.toFile)
+
+    uaSearch(scala.io.Source.fromFile(file.filePath.toFile, "UTF-8").getLines().mkString(" "))
   }
 
   @cask.postJson("/graph")
@@ -262,6 +273,7 @@ trait MetaDataSearchTrait {
   val empty: String = "NOT_FOUND"
   val fileName: String
   val separator: String
+
   def app: (String => String)
 
   def find(rgbId: String): Option[String] = {
@@ -278,11 +290,13 @@ trait MetaDataSearchTrait {
 object MetaDataSearch extends MetaDataSearchTrait {
   val fileName = "data/text.csv.s"
   val separator: String = ","
+
   def app = identity
 }
 
 object MetaDataSearchUA extends MetaDataSearchTrait {
   val fileName = "data/metadata.csv"
   val separator: String = "\t"
+
   def app = identity
 }
