@@ -45,13 +45,17 @@ object Norm {
     res
   }
 
-  def hashReadDir(dirPath: String, fileNameExtractor: String => String, output: String) = {
+  def hashReadDir(dirPath: String, fileNameExtractor: String => String, output: String): Unit = {
     val iter = FileUtils.filesInDir(dirPath).iterator.flatMap { fileName =>
       val fileId = fileNameExtractor(fileName.name)
       val content = read(fileName.path)
-      toNgram(content).map { ng =>
+      toNgram(content).flatMap { ng =>
         val h = hash64(ng)
-        s"${h._1}\t${h._2}\t${fileId}"
+        if (Math.abs(h._1 + h._2) % 10 == 0) {
+          Some(s"${h._1}\t${h._2}\t${fileId}")
+        } else {
+          None
+        }
       }
     }
 
