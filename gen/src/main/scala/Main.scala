@@ -1,5 +1,7 @@
 package diss
 
+import java.nio.ByteBuffer
+
 object Norm {
   lazy val replacement: scala.collection.Map[Char, String] = Map(
     '\ufb00' -> "ff",
@@ -61,14 +63,39 @@ object Norm {
 
     FileUtils.write(output, iter)
   }
+
+  def hashReadDirByte(dirPath: String, fileNameExtractor: String => Int, output: String): Unit = {
+    val iter: Iterator[Array[Byte]] = FileUtils.filesInDir(dirPath).iterator.flatMap { fileName =>
+      val fileId = fileNameExtractor(fileName.name)
+      val content = read(fileName.path)
+      toNgram(content).flatMap { ng =>
+        val h = hash64(ng)
+        if (Math.abs(h._1 + h._2) % 10 == 0) {
+          Some(int2bytes(Vector[Int](h._1, h._2, fileId)))
+        } else {
+          None
+        }
+      }
+    }
+
+    FileUtils.writeBytes(output, iter)
+  }
+
+
+  def int2bytes(values: Vector[Int]): Array[Byte] = {
+    val buffer = ByteBuffer.allocate(values.size * 4)
+    values.foreach { value =>
+      buffer.putInt(value)
+    }
+    buffer.array()
+  }
+
 }
 
 object Main extends App {
   override def main(args: Array[String]): Unit = {
     val pathPrefix = args.head
-    val bibIdx = args(1)
-
-    println(s"$pathPrefix $bibIdx")
-    FileUtils.dirsInDir(pathPrefix).par.foreach(dir => Norm.hashReadDir(pathPrefix + "/" + dir.toAbsolute.name, s => bibIdx + s.split("/").last.filter(_.isDigit), s"${dir.name}.th"))
+    println(s"$pathPrefix")
+    FileUtils.dirsInDir(pathPrefix).par.foreach(dir => Norm.hashReadDirByte(pathPrefix + "/" + dir.toAbsolute.name, s => s.split("/").last.filter(_.isDigit).toInt, s"${dir.name}.th"))
   }
 }

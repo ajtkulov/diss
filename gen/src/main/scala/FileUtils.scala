@@ -23,6 +23,16 @@ object FileUtils {
     }
   }
 
+  def withFileOutputStream[A](fileName: FileName)(func: FileOutputStream => A): Unit = {
+    import java.io.FileOutputStream
+    val fos = new FileOutputStream(fileName)
+    try {
+      func(fos)
+    } finally {
+      fos.close()
+    }
+  }
+
   /**
    * Directory list
    *
@@ -72,6 +82,12 @@ object FileUtils {
   def write(fileName: FileName, iterator: Iterator[String]): Unit = {
     withFile(fileName) { output =>
       iterator.foreach(line => output.println(line))
+    }
+  }
+
+  def writeBytes(fileName: FileName, iterator: Iterator[Array[Byte]]): Unit = {
+    withFileOutputStream(fileName) { output =>
+      iterator.foreach(chunk => output.write(chunk))
     }
   }
 
