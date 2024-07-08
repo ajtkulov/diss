@@ -22,7 +22,7 @@ object Norm {
   }
 
   def toNgram(value: String): Vector[String] = {
-    stringNorm(value).split(" ").sliding(6).filter(_.map(_.size).sum > 15).map(_.mkString(" ")).toVector
+    stringNorm(value).split(" ").sliding(6).filter(_.map(_.size).sum > 15).map(_.mkString(" ")).toVector.distinct
   }
 
   def hash(str: String, seed: Int): Int = {
@@ -90,6 +90,36 @@ object Norm {
     buffer.array()
   }
 
+  def extractNumPm(str: String): List[String] = {
+    val main = str.replaceAll("[.,]", "").map(c => if (c.isDigit || c == 177.toChar) c else ' ')
+    val split = main.split(177.toChar)
+    val list = split.map(x => x.split(" ").filter(_.nonEmpty))
+    (for {i <- 1 until list.size
+          if list(i - 1).size >= 2 && list(i).size >= 2 && list(i - 1).last.length > 1 && list(i).head.length > 1
+          } yield s"${list(i - 1).last}/${list(i).head}").toList.distinct
+  }
+
+  def hashReadPmTableDir(dirPath: String, fileNameExtractor: String => String, output: String): Unit = {
+    val iter = FileUtils.filesInDir(dirPath).iterator.flatMap { fileName =>
+      val fileId = fileNameExtractor(fileName.name)
+      val content = read(fileName.path)
+      val zipPages = content.split(12.toChar).zipWithIndex
+
+      zipPages.flatMap { case (page, num) =>
+        val list = extractNumPm(page)
+        if (list.size >= 6) {
+          list.map { pm =>
+            s"$pm\t$fileId:$num"
+          }
+        } else {
+          List.empty
+        }
+      }
+    }
+
+    FileUtils.write(output, iter)
+  }
+
 }
 
 object Main extends App {
@@ -97,5 +127,14 @@ object Main extends App {
     val pathPrefix = args.head
     println(s"$pathPrefix")
     FileUtils.dirsInDir(pathPrefix).par.foreach(dir => Norm.hashReadDirByte(pathPrefix + "/" + dir.toAbsolute.name, s => s.split("/").last.filter(_.isDigit).toInt, s"${dir.name}.th"))
+  }
+}
+
+object MainPMTable extends App {
+  override def main(args: Array[String]): Unit = {
+    val pathPrefix = args.head
+    val bibPrefix = args(1)
+    println(s"$pathPrefix $bibPrefix")
+    FileUtils.dirsInDir(pathPrefix).par.foreach(dir => Norm.hashReadPmTableDir(pathPrefix + "/" + dir.toAbsolute.name, s => bibPrefix + s.split("/").last.filter(_.isDigit), s"${dir.name}.pm"))
   }
 }
