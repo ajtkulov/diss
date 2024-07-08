@@ -135,6 +135,6 @@ object MainPMTable extends App {
     val pathPrefix = args.head
     val bibPrefix = args(1)
     println(s"$pathPrefix $bibPrefix")
-    FileUtils.dirsInDir(pathPrefix).par.foreach(dir => Norm.hashReadPmTableDir(pathPrefix + "/" + dir.toAbsolute.name, s => bibPrefix + s.split("/").last.filter(_.isDigit), s"${dir.name}.pm"))
+    FileUtils.dirsInDir(pathPrefix).par.foreach(dir => Norm.hashReadPmTableDir(pathPrefix + "/" + dir.toAbsolute.name, s => bibPrefix + s.split("/").last.filter(_.isDigit), pathPrefix + "/" + s"${dir.name}.pm"))
   }
 }
